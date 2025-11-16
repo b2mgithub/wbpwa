@@ -1,0 +1,129 @@
+<div class="k-p-4">
+  <h1 class="k-mb-4">Service Worker Test Dashboard</h1>
+
+  <!-- Status Cards -->
+  <div class="k-d-flex k-gap-4 k-mb-4">
+    <div class="k-card k-flex-1">
+      <div class="k-card-body">
+        <h3 class="k-card-title">Network Status</h3>
+        @if (isOnline()) {
+          <span class="k-badge k-badge-success k-badge-lg">🌐 Online</span>
+        } @else {
+          <span class="k-badge k-badge-warning k-badge-lg">📴 Offline</span>
+        }
+      </div>
+    </div>
+
+    <div class="k-card k-flex-1">
+      <div class="k-card-body">
+        <h3 class="k-card-title">Service Worker</h3>
+        @if (swActive()) {
+          <span class="k-badge k-badge-success k-badge-lg">✅ Active</span>
+        } @else {
+          <span class="k-badge k-badge-error k-badge-lg">❌ Not Active</span>
+        }
+      </div>
+    </div>
+
+    <div class="k-card k-flex-1">
+      <div class="k-card-body">
+        <h3 class="k-card-title">Total Cached</h3>
+        <div class="k-text-lg">{{ formatBytes(totalCachedSize()) }}</div>
+        <div class="k-text-sm k-text-secondary">{{ caches().length }} cache(s)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="k-mb-4">
+    <h2 class="k-mb-2">Actions</h2>
+    <div class="k-d-flex k-gap-2 k-flex-wrap">
+      <button kendoButton [themeColor]="'primary'" (click)="refreshCaches()">
+        <kendo-icon name="reload"></kendo-icon> Refresh Cache Info
+      </button>
+      <button kendoButton [themeColor]="'info'" (click)="testOfflineCapability()">
+        <kendo-icon name="check"></kendo-icon> Test Offline Mode
+      </button>
+      <button kendoButton [themeColor]="'info'" (click)="testApiCache()">
+        <kendo-icon name="globe"></kendo-icon> Test API Cache
+      </button>
+      <button kendoButton [themeColor]="'warning'" (click)="forceUpdate()">
+        <kendo-icon name="refresh"></kendo-icon> Force SW Update
+      </button>
+      <button kendoButton [themeColor]="'error'" (click)="clearAllCaches()">
+        <kendo-icon name="trash"></kendo-icon> Clear All Caches
+      </button>
+      <button kendoButton [themeColor]="'error'" (click)="unregisterServiceWorker()">
+        <kendo-icon name="cancel"></kendo-icon> Unregister SW
+      </button>
+    </div>
+  </div>
+
+  <!-- Test Results -->
+  @if (testResults().length > 0) {
+    <div class="k-card k-mb-4">
+      <div class="k-card-header">
+        <div class="k-d-flex k-justify-content-between k-align-items-center">
+          <h2 class="k-card-title k-m-0">Test Results</h2>
+          <button kendoButton [size]="'small'" (click)="clearTestResults()">Clear</button>
+        </div>
+      </div>
+      <div class="k-card-body">
+        <div class="k-font-mono k-text-sm">
+          @for (result of testResults(); track $index) {
+            <div class="k-mb-1">{{ result }}</div>
+          }
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Cache Details -->
+  @if (loading()) {
+    <div class="k-d-flex k-flex-col k-align-items-center k-p-4">
+      <kendo-loader [type]="'infinite-spinner'" [themeColor]="'primary'"></kendo-loader>
+      <p class="k-mt-2">Loading cache information...</p>
+    </div>
+  } @else {
+    <div class="k-mb-4">
+      <h2 class="k-mb-2">Cache Details</h2>
+      @for (cache of caches(); track cache.name) {
+        <div class="k-card k-mb-3">
+          <div class="k-card-header">
+            <div class="k-d-flex k-justify-content-between">
+              <h3 class="k-card-title k-m-0">{{ cache.name }}</h3>
+              <span class="k-badge k-badge-info">{{ formatBytes(cache.totalSize) }} ({{ cache.files.length }} files)</span>
+            </div>
+          </div>
+          <div class="k-card-body">
+            @for (file of cache.files; track file.url) {
+              <div class="k-d-flex k-justify-content-between k-py-1 k-border-bottom">
+                <span class="k-text-ellipsis" [title]="file.url">{{ getFileName(file.url) }}</span>
+                <span class="k-text-secondary k-text-sm">{{ formatBytes(file.size) }}</span>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Instructions -->
+  <div class="k-card">
+    <div class="k-card-body">
+      <h2 class="k-card-title">Testing Instructions</h2>
+      <ol class="k-mb-3">
+        <li class="k-mb-2"><strong>Test Offline Mode:</strong> Open DevTools → Network → Set to "Offline" → Try refreshing the page</li>
+        <li class="k-mb-2"><strong>Test Navigation:</strong> Click around the app while offline - routes should still work</li>
+        <li class="k-mb-2"><strong>Test API Cache:</strong> Go offline and click "Test API Cache" to see if cached data loads</li>
+        <li class="k-mb-2"><strong>Clear Cache:</strong> Click "Clear All Caches" then refresh - app should re-download everything</li>
+        <li class="k-mb-2"><strong>Force Refresh:</strong> Press Ctrl+Shift+R to bypass service worker cache</li>
+      </ol>
+      <div class="k-messagebox k-messagebox-info">
+        <strong>ℹ️ Testing Tips:</strong> The service worker now includes a navigation fallback route. 
+        When offline, any page refresh or direct navigation will serve the cached index.html, 
+        allowing the Angular router to handle routing client-side. Test this by going offline and refreshing!
+      </div>
+    </div>
+  </div>
+</div>

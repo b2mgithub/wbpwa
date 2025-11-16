@@ -1,0 +1,99 @@
+<div style="padding: 20px; max-width: 1400px; margin: 0 auto;">
+  <h2>Failed Request Queue Test</h2>
+  
+  <div style="margin-bottom: 20px;">
+    <h3>Queue Status</h3>
+    <p>
+      <strong>Total Pending Requests:</strong> {{ failedRequests().length }}
+    </p>
+    
+    <div style="display: flex; gap: 10px; margin-top: 10px;">
+      <button kendoButton (click)="loadFailedRequests()" [disabled]="loading()">
+        Refresh Queue
+      </button>
+      <button kendoButton (click)="retryAllRequests()" themeColor="primary" [disabled]="failedRequests().length === 0">
+        Retry All
+      </button>
+      <button kendoButton (click)="clearAllRequests()" themeColor="error" [disabled]="failedRequests().length === 0">
+        Clear All
+      </button>
+    </div>
+  </div>
+
+  <ng-container *ngIf="loading()">
+    <kendo-loader type="infinite-spinner" size="medium"></kendo-loader>
+  </ng-container>
+
+  <div style="margin-bottom: 20px;">
+    <h3>Failed Requests</h3>
+    
+    <ng-container *ngIf="failedRequests().length === 0; else failedGrid">
+      <p style="color: #28a745; font-weight: bold;">&#x2705; No pending requests - all synced!</p>
+    </ng-container>
+    <ng-template #failedGrid>
+      <kendo-grid
+        [data]="failedRequests()"
+        [pageable]="true"
+        [pageSize]="10"
+        [sortable]="true"
+        [height]="400"
+      >
+        <kendo-grid-column field="operation" title="Operation" [width]="120">
+          <ng-template kendoGridCellTemplate let-dataItem>
+            <span style="font-weight: bold; text-transform: uppercase;">{{ dataItem.operation }}</span>
+          </ng-template>
+        </kendo-grid-column>
+        <kendo-grid-column field="method" title="Method" [width]="100">
+          <ng-template kendoGridCellTemplate let-dataItem>
+            <button kendoButton [themeColor]="getMethodColor(dataItem.method)" size="small" fillMode="outline">
+              {{ dataItem.method }}
+            </button>
+          </ng-template>
+        </kendo-grid-column>
+        <kendo-grid-column field="productId" title="Product ID" [width]="320"></kendo-grid-column>
+        <kendo-grid-column field="timestamp" title="Failed At" [width]="220">
+          <ng-template kendoGridCellTemplate let-dataItem>
+            {{ formatTimestamp(dataItem.timestamp) }}
+          </ng-template>
+        </kendo-grid-column>
+        <kendo-grid-column field="retryCount" title="Retries" [width]="100"></kendo-grid-column>
+        <kendo-grid-column field="url" title="URL" [width]="300"></kendo-grid-column>
+        <kendo-grid-column title="Actions" [width]="200">
+          <ng-template kendoGridCellTemplate let-dataItem>
+            <button kendoButton (click)="retryRequest(dataItem)" size="small" themeColor="primary">
+              Retry
+            </button>
+            <button kendoButton (click)="deleteRequest(dataItem)" size="small" themeColor="error" style="margin-left: 5px;">
+              Delete
+            </button>
+          </ng-template>
+        </kendo-grid-column>
+      </kendo-grid>
+    </ng-template>
+  </div>
+
+  <div style="margin-top: 30px;">
+    <h3>Test Results</h3>
+    <button kendoButton (click)="clearTestResults()" [disabled]="testResults().length === 0" size="small">
+      Clear Results
+    </button>
+    
+    <div style="
+      margin-top: 10px;
+      padding: 15px;
+      background: #f5f5f5;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      max-height: 300px;
+      overflow-y: auto;
+    ">
+      <ng-container *ngIf="testResults().length === 0; else testResultsBlock">
+        <p style="color: #999; margin: 0;">No test results yet...</p>
+      </ng-container>
+      <ng-template #testResultsBlock>
+        <div *ngFor="let result of testResults(); let i = index" style="margin-bottom: 5px;">{{ result }}</div>
+      </ng-template>
+    </div>
+  </div>
+</div>

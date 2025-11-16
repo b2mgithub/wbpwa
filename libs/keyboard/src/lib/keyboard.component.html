@@ -1,0 +1,53 @@
+<kendo-dialog
+  *ngIf="isOpen()"
+  [width]="400"
+  (close)="onClose()"
+  class="keyboard-dialog"
+  role="dialog"
+>
+  <div class="keyboard-container">
+    <div class="keyboard-header">
+      <form [formGroup]="keyboardForm">
+        <kendo-formfield>
+          <kendo-floatinglabel 
+            class="outline" 
+            [text]="store.config()?.title || ''"
+          >
+            <kendo-textbox
+              #keyboardInput
+              formControlName="inputValue"
+              fillMode="outline"
+              placeholder=" "
+              [readonly]="false"
+              (keydown)="onKeydown($event)"
+              (input)="onInputChange($event)"
+            ></kendo-textbox>
+          </kendo-floatinglabel>
+        </kendo-formfield>
+      </form>
+      <button
+        kendoButton
+        [svgIcon]="checkIcon"
+        [themeColor]="'primary'"
+        class="confirm-btn"
+        (click)="onConfirm()"
+      >
+      </button>
+    </div>
+
+    <div class="keyboard-buttons" [ngClass]="'keyboard-' + store.config()?.type">
+      <button
+        *ngFor="let btn of buttons()"
+        kendoButton
+        [size]="'large'"
+        [themeColor]="'primary'"
+        [fillMode]="'solid'"
+        [ngClass]="btn.cssClass || ''"
+        class="keyboard-key"
+        (click)="onButtonClick(btn)"
+      >
+        {{ btn.label }}
+      </button>
+    </div>
+  </div>
+</kendo-dialog>

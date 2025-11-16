@@ -1,18 +1,20 @@
 import { TestBed } from '@angular/core/testing';
+import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { provideRouter } from '@angular/router';
+
 import { App } from './app';
-import { NxWelcome } from './nx-welcome';
 
 describe('App', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [App, NxWelcome],
+      imports: [App],
+  providers: [provideNoopAnimations(), provideRouter([])],
     }).compileComponents();
   });
 
-  it('should render title', () => {
+  it('should create the shell component', () => {
     const fixture = TestBed.createComponent(App);
-    fixture.detectChanges();
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Welcome demo');
+    const component = fixture.componentInstance;
+    expect(component).toBeTruthy();
   });
 });

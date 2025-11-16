@@ -1,0 +1,19 @@
+{
+  "name": "forms",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/forms/src",
+  "prefix": "lib",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/forms",
+        "main": "libs/forms/src/index.ts",
+        "tsConfig": "libs/forms/tsconfig.lib.json"
+      }
+    }
+  }
+}

@@ -1,2 +1,66 @@
-<app-nx-welcome></app-nx-welcome>
-<router-outlet></router-outlet>
+<ng-container>
+  <div class="demo-header">
+    <button
+      kendoButton
+      [svgIcon]="menuSvg"
+      fillMode="flat"
+      (click)="drawer.toggle()"
+    > </button>
+  </div>
+  <kendo-drawer-container>
+    <kendo-drawer
+      #drawer
+      mode="push"
+    >
+      <ng-template kendoDrawerTemplate>
+        <ul class="k-drawer-items">
+          <li class="k-drawer-item">
+            <a class="k-drawer-link" [routerLink]="'/blocks'" (click)="drawer.toggle()">
+              Blocks
+            </a>
+          </li>
+          <li class="k-drawer-item">
+            <a class="k-drawer-link" [routerLink]="'/reports'" (click)="drawer.toggle()">
+              Reports
+            </a>
+          </li>
+          <li class="k-drawer-item">
+            <a class="k-drawer-link" [routerLink]="'/products'" (click)="drawer.toggle()">
+              Products
+            </a>
+          </li>
+          <li class="k-drawer-item">
+            <a class="k-drawer-link" [routerLink]="'/productions'" (click)="drawer.toggle()">
+              Productions
+            </a>
+          </li>
+          <li class="k-drawer-item">
+            <a class="k-drawer-link" [routerLink]="'/rates'" (click)="drawer.toggle()">
+              Rates
+            </a>
+          </li>
+          <li class="k-drawer-item">
+            <a class="k-drawer-link" [routerLink]="'/test-keyboard'" (click)="drawer.toggle()">
+              Test Keyboard
+            </a>
+          </li>
+          <li class="k-drawer-item">
+            <a class="k-drawer-link" [routerLink]="'/test-request'" (click)="drawer.toggle()">
+              Test Request
+            </a>
+          </li>
+          <li class="k-drawer-item">
+            <a class="k-drawer-link" [routerLink]="'/test-sw'" (click)="drawer.toggle()">
+              Test SW
+            </a>
+          </li>
+          
+        </ul>
+      </ng-template>
+    </kendo-drawer>
+
+    <kendo-drawer-content>
+      <router-outlet></router-outlet>
+    </kendo-drawer-content>
+  </kendo-drawer-container>
+</ng-container>

@@ -1,1 +1,37 @@
-/* You can add global styles to this file, and also import other style files */
+@import "@progress/kendo-theme-material/dist/all.css";
+
+// Custom floating label overrides and spacing fixes
+@import "./styles.css";
+
+// Styles moved from example.component.ts
+.form-container {
+	max-width: 600px;
+	margin: 20px auto;
+	padding: 20px;
+}
+
+h2 {
+	margin-bottom: 24px;
+	color: #0b4f71;
+}
+
+.form-field {
+	margin-bottom: 16px;
+
+	input[readonly] {
+		cursor: pointer;
+		background-color: white;
+	}
+}
+
+.form-actions {
+	display: flex;
+	gap: 12px;
+	margin-top: 24px;
+
+	button {
+		flex: 1;
+		padding: 12px;
+		font-size: 16px;
+	}
+}

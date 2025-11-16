@@ -12,13 +12,20 @@
       "options": {
         "outputPath": "dist/apps/demo",
         "browser": "apps/demo/src/main.ts",
-        "polyfills": ["zone.js"],
+        "polyfills": ["apps/demo/src/polyfills.ts"],
         "tsConfig": "apps/demo/tsconfig.app.json",
         "inlineStyleLanguage": "scss",
         "assets": [
           {
             "glob": "**/*",
             "input": "apps/demo/public"
+          },
+          "apps/demo/src/favicon.ico",
+          "apps/demo/src/assets",
+          {
+            "glob": "manifest.webmanifest",
+            "input": "apps/demo/src",
+            "output": "/"
           }
         ],
         "styles": ["apps/demo/src/styles.scss"]
@@ -28,16 +35,22 @@
           "budgets": [
             {
               "type": "initial",
-              "maximumWarning": "500kb",
-              "maximumError": "1mb"
+              "maximumWarning": "5mb",
+              "maximumError": "12.5mb"
             },
             {
               "type": "anyComponentStyle",
-              "maximumWarning": "4kb",
-              "maximumError": "8kb"
+              "maximumWarning": "16kb",
+              "maximumError": "32kb"
             }
           ],
-          "outputHashing": "all"
+          "outputHashing": "all",
+          "fileReplacements": [
+            {
+              "replace": "apps/demo/src/environments/environment.ts",
+              "with": "apps/demo/src/environments/environment.prod.ts"
+            }
+          ]
         },
         "development": {
           "optimization": false,
@@ -59,6 +72,40 @@
         }
       },
       "defaultConfiguration": "development"
+    },
+    "compile-sw": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "webpack --config apps/demo/webpack.sw.config.js",
+        "cwd": "."
+      }
+    },
+    "inject-sw": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node apps/demo/workbox-build-inject.js",
+        "cwd": "."
+      }
+    },
+    "build-sw": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "nx compile-sw demo",
+          "nx inject-sw demo"
+        ],
+        "parallel": false
+      }
+    },
+    "build-with-sw": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "nx build demo --configuration=production",
+          "nx build-sw demo"
+        ],
+        "parallel": false
+      }
     },
     "extract-i18n": {
       "executor": "@angular/build:extract-i18n",

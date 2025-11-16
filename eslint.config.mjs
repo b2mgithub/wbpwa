@@ -5,7 +5,8 @@ export default [
   ...nx.configs['flat/typescript'],
   ...nx.configs['flat/javascript'],
   {
-    ignores: ['**/dist'],
+    // Ignore build output and local temporary/generated folders
+    ignores: ['**/dist', '**/.tmp/**', '**/*/.tmp/**'],
   },
   {
     files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],

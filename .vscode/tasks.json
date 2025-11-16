@@ -1,0 +1,43 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "nx build demo",
+			"type": "shell",
+			"command": "npx nx build demo",
+			"problemMatcher": [
+				"$tsc"
+			],
+			"group": "build"
+		},
+		{
+			"label": "nx serve demo",
+			"type": "shell",
+			"command": "npx nx serve demo",
+			"isBackground": true,
+			"problemMatcher": [
+				"$tsc"
+			],
+			"group": "build"
+		},
+		{
+			"label": "nx build demo",
+			"type": "shell",
+			"command": "npx nx build demo",
+			"problemMatcher": [
+				"$tsc"
+			],
+			"group": "build"
+		},
+		{
+			"label": "nx serve demo",
+			"type": "shell",
+			"command": "npx nx serve demo",
+			"isBackground": true,
+			"problemMatcher": [
+				"$tsc"
+			],
+			"group": "build"
+		}
+	]
+}

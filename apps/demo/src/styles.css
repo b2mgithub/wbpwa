@@ -1,0 +1,260 @@
+input:focus {
+  outline: 3px solid lime !important;
+  box-shadow: 0 0 10px lime !important;
+}
+
+input {
+  outline: 1px solid red !important;
+}
+input[readonly]:focus {
+  outline: 2px solid red !important;
+  background: #fffbe6 !important;
+}
+/* =================================================================== */
+/* MINIMAL KENDO MATERIAL THEME OVERRIDES - PRESERVES PERFECT LOOK */
+/* =================================================================== */
+
+/* Overall body styling */
+body {
+  margin: 0 !important;
+}
+
+/* Demo header styling */
+.demo-header {
+  height: 32px;
+  background-color: rgb(39, 62, 105)!important;
+  display: flex;
+  align-items: center;
+}
+.demo-header > button {
+  padding: 4px!important;
+  font-size: 18px!important;
+  color: #fff!important;
+  background-color: transparent!important;
+  border: none!important;
+  height: 24px!important;
+  width: 24px!important;
+}
+.demo-header > button:hover {
+  background-color: rgba(255, 255, 255, 0.1)!important;
+}
+
+/* CSS Custom Properties for floating label positioning */
+:root {
+  --empty-top: 29px;
+  --focused-top: 5px;
+}
+
+/* Kendo v20+ Floating Label Positioning - Updated for newer class structure */
+/* Ensure labels are always visible */
+.k-floating-label-container > .k-floating-label {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Empty state: label appears as full-size placeholder inside input */
+/* Updated for Kendo v20+: uses k-empty instead of k-state-empty */
+.k-floating-label-container.k-empty > .k-floating-label {
+  top: var(--empty-top) !important;
+  left: 12px !important;
+  transform: scale(1) !important;
+  background-color: transparent !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Focused and filled states: label moves to border (notched effect) */
+/* Updated for Kendo v20+: uses k-focus and :not(k-empty) */
+.k-floating-label-container.k-focus > .k-floating-label,
+.k-floating-label-container:not(.k-empty) > .k-floating-label {
+  top: var(--focused-top) !important;
+  left: 8px !important;
+  transform: scale(0.75) !important;
+  background-color: white !important;
+  padding-left: 4px !important;
+  padding-right: 4px !important;
+  margin-left: -2px !important;
+  margin-right: -2px !important;
+  z-index: 10 !important;
+}
+
+/* Outline container for consistent 12px alignment */
+.outline-container {
+  padding: 0;
+  margin: 0;
+}
+
+.outline-container h2 {
+  margin-left: 12px !important;
+}
+
+/* Form layout CSS classes */
+.outline-form {
+  max-width: 800px;
+  margin-left: 12px;
+}
+
+.outline-div {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 12px;
+  row-gap: 4px;
+  width: 100%;
+  align-items: stretch;
+}
+
+/* Force textboxes to use full width within their grid cells */
+.outline-div .k-floating-label-container {
+  width: 100% !important;
+}
+
+.outline-div .k-textbox-container,
+.outline-div .k-numerictextbox-container {
+  width: 100% !important;
+}
+
+.outline-div .k-textbox,
+.outline-div .k-numerictextbox,
+.outline-div input {
+  width: 100% !important;
+  min-width: 200px !important;
+}
+
+/* Ensure form fields work with CSS Grid */
+.outline-div kendo-formfield {
+  width: 100% !important;
+}
+
+.outline-form-buttons {
+  margin-top: 20px;
+  margin-left: 12px;
+  display: flex;
+  gap: 10px;
+}
+
+/* =================================================================== */
+/* KEYBOARD-SPECIFIC ADDITIONS - INPUT USES EXISTING OUTLINE STYLES */
+/* =================================================================== */
+
+/* Keyboard dialog styling */
+.keyboard-dialog .k-dialog {
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.keyboard-dialog .k-window-content {
+  padding: 16px;
+}
+
+/* Keyboard container layout */
+.keyboard-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Keyboard header layout - floatinglabel inherits outline styles */
+.keyboard-header {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end; /* Align to bottom */
+
+  kendo-floatinglabel {
+    flex: 1;
+  }
+
+  .confirm-btn {
+    min-width: 48px;
+    height: 48px; /* Match textbox height exactly */
+    margin-bottom: 0; /* Remove any margin */
+  }
+}
+
+/* Keyboard floating label - force proper z-index and positioning */
+.keyboard-header .k-floating-label-container > .k-floating-label {
+  z-index: 20 !important;
+  background-color: white !important;
+  padding-left: 4px !important;
+  padding-right: 4px !important;
+}
+
+/* Force keyboard input to never show as empty when there's a value */
+.keyboard-header .k-floating-label-container:not(.k-empty) > .k-floating-label {
+  top: var(--focused-top) !important;
+  left: 8px !important;
+  transform: scale(0.75) !important;
+  background-color: white !important;
+  padding-left: 4px !important;
+  padding-right: 4px !important;
+  margin-left: -2px !important;
+  margin-right: -2px !important;
+  z-index: 20 !important;
+}
+
+/* Ensure keyboard textbox input field is properly styled */
+.keyboard-header .k-textbox-container .k-textbox,
+.keyboard-header .k-textbox {
+  position: relative;
+  z-index: 1;
+  height: 48px; /* Match button height */
+  min-height: 48px;
+}
+
+/* Keyboard button grid */
+.keyboard-buttons {
+  display: grid;
+  gap: 8px;
+}
+
+.keyboard-buttons.keyboard-numeric {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.keyboard-buttons.keyboard-alphanumeric,
+.keyboard-buttons.keyboard-custom {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+/* Keyboard keys - touch-friendly */
+.keyboard-key {
+  min-height: 60px;
+  font-size: 24px;
+  font-weight: 600;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+  padding: 16px 8px;
+}
+
+.keyboard-key:active {
+  transform: scale(0.95);
+}
+
+.keyboard-key.backspace-btn {
+  font-size: 28px;
+  grid-column: span 2;
+}
+
+.keyboard-key.decimal-btn {
+  font-size: 32px;
+}
+
+.keyboard-numeric .backspace-btn {
+  grid-column: auto;
+}
+
+/* Keyboard button colors */
+.keyboard-dialog .k-button-solid-primary {
+  background-color: #0b4f71;
+  border-color: #0b4f71;
+}
+
+.keyboard-dialog .k-button-solid-primary:hover {
+  background-color: #094363;
+  border-color: #094363;
+}
+
+.keyboard-dialog .k-button-solid-primary:active {
+  background-color: #073652;
+  border-color: #073652;
+}

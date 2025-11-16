@@ -1,0 +1,125 @@
+<div class="form-container">
+  <h2>Log Truck Entry Form</h2>
+  <form [formGroup]="form">
+    <kendo-formfield>
+      <div class="k-form-field-wrap">
+        <kendo-floatinglabel class="outline" text="Bunching Hrs">
+          <kendo-textbox
+            #readonlyInput
+            fillMode="outline"
+            placeholder=""
+            formControlName="bunchingHrs"
+            [readonly]="true"
+            (click)="openNumeric('bunchingHrs', 'Bunching Hrs', true)"
+          ></kendo-textbox>
+        </kendo-floatinglabel>
+      </div>
+    </kendo-formfield>
+
+    <kendo-formfield>
+      <div class="k-form-field-wrap">
+        <kendo-floatinglabel class="outline" text="Skidding Hrs">
+          <kendo-textbox
+            #readonlyInput
+            fillMode="outline"
+            placeholder=""
+            formControlName="skiddingHrs"
+            [readonly]="true"
+            (click)="openNumeric('skiddingHrs', 'Skidding Hrs', true)"
+          ></kendo-textbox>
+        </kendo-floatinglabel>
+      </div>
+    </kendo-formfield>
+
+    <kendo-formfield>
+      <div class="k-form-field-wrap">
+        <kendo-floatinglabel class="outline" text="Decking Hrs">
+          <kendo-textbox
+            #readonlyInput
+            fillMode="outline"
+            placeholder=""
+            formControlName="deckingHrs"
+            [readonly]="true"
+            (click)="openNumeric('deckingHrs', 'Decking Hrs', true)"
+          ></kendo-textbox>
+        </kendo-floatinglabel>
+      </div>
+    </kendo-formfield>
+
+    <!-- Equipment fields -->
+    <kendo-formfield>
+      <div class="k-form-field-wrap">
+        <kendo-floatinglabel class="outline" text="Cat 1 Type">
+          <kendo-textbox
+            #readonlyInput
+            fillMode="outline"
+            placeholder=""
+            formControlName="cat1Type"
+            [readonly]="true"
+            (click)="openEquipment('cat1Type', 'Cat 1 Type', ['527', 'D6', 'D7', 'D8'])"
+          ></kendo-textbox>
+        </kendo-floatinglabel>
+      </div>
+    </kendo-formfield>
+
+    <kendo-formfield>
+      <div class="k-form-field-wrap">
+        <kendo-floatinglabel class="outline" text="Hoe 1 Type">
+          <kendo-textbox
+            #readonlyInput
+            fillMode="outline"
+            placeholder=""
+            formControlName="hoe1Type"
+            [readonly]="true"
+            (click)="openEquipment('hoe1Type', 'Hoe 1 Type', ['320', '250', '290', '350'])"
+          ></kendo-textbox>
+        </kendo-floatinglabel>
+      </div>
+    </kendo-formfield>
+
+    <kendo-formfield>
+      <div class="k-form-field-wrap">
+        <kendo-floatinglabel class="outline" text="Cat 2 Type">
+          <kendo-textbox
+            #readonlyInput
+            fillMode="outline"
+            placeholder=""
+            formControlName="cat2Type"
+            [readonly]="true"
+            (click)="openEquipment('cat2Type', 'Cat 2 Type', ['527', 'D6', 'D7', 'D8'])"
+          ></kendo-textbox>
+        </kendo-floatinglabel>
+      </div>
+    </kendo-formfield>
+
+    <kendo-formfield>
+      <div class="k-form-field-wrap">
+        <kendo-floatinglabel class="outline" text="Hoe 2 Type">
+          <kendo-textbox
+            #readonlyInput
+            fillMode="outline"
+            placeholder=""
+            formControlName="hoe2Type"
+            [readonly]="true"
+            (click)="openEquipment('hoe2Type', 'Hoe 2 Type', ['320', '250', '290', '350'])"
+          ></kendo-textbox>
+        </kendo-floatinglabel>
+      </div>
+    </kendo-formfield>
+
+    <div class="form-actions">
+      <button kendoButton [themeColor]="'primary'" (click)="submitForm()">
+        Update
+      </button>
+      <button kendoButton [themeColor]="'error'" (click)="cancelForm()">
+        Back
+      </button>
+    </div>
+  </form>
+  <lib-keyboard
+    [isOpen]="keyboardOpen"
+    [config]="keyboardConfig"
+    (valueChange)="onValueChange($event)"
+    (close)="onKeyboardClose()"
+  ></lib-keyboard>
+</div>

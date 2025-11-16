@@ -1,0 +1,5 @@
+# Ignore generated temp files and build artifacts
+**/.tmp/**
+dist/**
+.nx/**
+.angular/**
