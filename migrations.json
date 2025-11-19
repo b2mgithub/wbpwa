@@ -1,0 +1,10 @@
+{
+  "nx-console": {
+    "initialGitRef": {
+      "ref": "a760c1af3dea39cc36e56b30ceea5e51942a3de2",
+      "subject": "for nx migration 2"
+    },
+    "targetVersion": "latest",
+    "confirmedPackageUpdates": true
+  }
+}

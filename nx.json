@@ -15,7 +15,7 @@
     ],
     "sharedGlobals": ["{workspaceRoot}/.github/workflows/ci.yml"]
   },
-  "nxCloudId": "690425b3b1dd934991b0367d",
+
   "targetDefaults": {
     "@angular/build:application": {
       "cache": true,
@@ -56,13 +56,8 @@
       "options": {
         "targetName": "e2e"
       }
-    },
-    {
-      "plugin": "@nx/eslint/plugin",
-      "options": {
-        "targetName": "lint"
-      }
     }
+
   ],
   "generators": {
     "@nx/angular:application": {

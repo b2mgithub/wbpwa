@@ -1,0 +1,194 @@
+<div>
+  <h1>IndexedDB Inspector</h1>
+
+  @if (loading()) {
+    <div>
+      <kendo-loader [themeColor]="'primary'"></kendo-loader>
+      <p>Loading database information...</p>
+    </div>
+  }
+
+  @if (error()) {
+    <div>
+      <strong>Error:</strong> {{ error() }}
+    </div>
+  }
+
+  <div>
+    <button kendoButton [themeColor]="'primary'" (click)="refresh()">
+      <kendo-icon name="reload"></kendo-icon> Refresh
+    </button>
+  </div>
+
+  <!-- Auth Store State -->
+  <div class="k-card">
+    <div class="k-card-header">
+      <h2 class="k-card-title">Auth Store State</h2>
+    </div>
+    <div class="k-card-body">
+      <div>
+        <strong>isAuthenticated:</strong>
+        @if (authState().isAuthenticated) {
+          <span class="k-badge k-badge-success">✅ true</span>
+        } @else {
+          <span class="k-badge k-badge-error">❌ false</span>
+        }
+      </div>
+      <div>
+        <strong>isAdmin:</strong>
+        @if (authState().isAdmin) {
+          <span class="k-badge k-badge-info">🔐 true</span>
+        } @else {
+          <span>false</span>
+        }
+      </div>
+      <div>
+        <strong>userId:</strong> {{ authState().userId || 'null' }}
+      </div>
+      <div>
+        <strong>User Object:</strong>
+        @if (authState().user) {
+          <kendo-treeview
+            [nodes]="jsonToTreeView(authState().user)"
+            textField="text"
+            childrenField="items"
+            kendoTreeViewExpandable
+          >
+          </kendo-treeview>
+        } @else {
+          <span>null</span>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Auth Database -->
+  <div class="k-card">
+    <div class="k-card-header">
+      <h2 class="k-card-title">Auth Database (DevilsOffline-Auth)</h2>
+    </div>
+    <div class="k-card-body">
+      @if (authDbInfo()) {
+        <div>
+          <strong>Version:</strong> {{ authDbInfo()!.version }}
+        </div>
+        <div>
+          <strong>Current User:</strong>
+          @if (currentUser()) {
+            <kendo-treeview
+              [nodes]="jsonToTreeView(currentUser())"
+              textField="text"
+              childrenField="items"
+              kendoTreeViewExpandable
+            >
+            </kendo-treeview>
+          } @else {
+            <div>No user stored in Auth DB</div>
+          }
+        </div>
+        <div>
+          <strong>Object Stores:</strong>
+          @for (store of authDbInfo()!.objectStores; track store.name) {
+            <div>
+              <strong>{{ store.name }}</strong> ({{ store.count }} records)
+              @if (store.data.length > 0) {
+                <kendo-treeview
+                  [nodes]="jsonToTreeView(store.data)"
+                  textField="text"
+                  childrenField="items"
+                  kendoTreeViewExpandable
+                >
+                </kendo-treeview>
+              }
+            </div>
+          }
+        </div>
+      } @else {
+        <div>Auth database not available</div>
+      }
+    </div>
+  </div>
+
+  <!-- User Database -->
+  <div class="k-card">
+    <div class="k-card-header">
+      <h2 class="k-card-title">User Database</h2>
+    </div>
+    <div class="k-card-body">
+      @if (userDbInfo()) {
+        <div>
+          <strong>Name:</strong> {{ userDbInfo()!.name }}
+        </div>
+        <div>
+          <strong>Version:</strong> {{ userDbInfo()!.version }}
+        </div>
+        <div>
+          <strong>Object Stores:</strong>
+          @for (store of userDbInfo()!.objectStores; track store.name) {
+            <div>
+              <h4>{{ store.name }} ({{ store.count }} records)</h4>
+              
+              @if (store.data.length > 0) {
+                <!-- Use Grid for tabular data -->
+                @if (isTabularData(store.data)) {
+                  <kendo-grid
+                    [data]="store.data"
+                    [height]="300"
+                    [scrollable]="'scrollable'"
+                  >
+                    @for (col of getColumns(store.data[0]); track col) {
+                      <kendo-grid-column
+                        [field]="col"
+                        [title]="col"
+                        [width]="150"
+                      ></kendo-grid-column>
+                    }
+                  </kendo-grid>
+                } @else {
+                  <!-- Use TreeView for nested/single objects -->
+                  <kendo-treeview
+                    [nodes]="jsonToTreeView(store.data)"
+                    textField="text"
+                    childrenField="items"
+                    kendoTreeViewExpandable
+                  >
+                  </kendo-treeview>
+                }
+                
+                @if (store.count > store.data.length) {
+                  <div class="k-text-muted">
+                    Showing first {{ store.data.length }} of {{ store.count }} records
+                  </div>
+                }
+              } @else {
+                <div class="k-text-muted">Empty</div>
+              }
+            </div>
+          }
+        </div>
+      } @else {
+        <div>
+          @if (authState().isAuthenticated) {
+            User database not yet initialized
+          } @else {
+            Not authenticated - no user database
+          }
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Usage Instructions -->
+  <div class="k-card">
+    <div class="k-card-body">
+      <h2 class="k-card-title">Usage</h2>
+      <p>This page displays IndexedDB state for debugging without opening DevTools.</p>
+      <ul>
+        <li>Test cycle: login → test-idb → logout → test-idb</li>
+        <li>Verify databases are created on login and cleared on logout</li>
+        <li>TreeView: Expandable/collapsible for nested data</li>
+        <li>Grid: Tabular display for productions, rates, blocks, etc.</li>
+      </ul>
+    </div>
+  </div>
+</div>

@@ -42,80 +42,30 @@ import { KENDO_BUTTONS } from '@progress/kendo-angular-buttons';
             </kendo-formerror>
           </kendo-formfield>
 
-          <div class="error-message" *ngIf="authStore.error()">
-            {{ authStore.error() }}
-          </div>
+
 
           <button
             kendoButton
             themeColor="primary"
             type="submit"
-            [disabled]="form.invalid || authStore.isLoading()"
+            [disabled]="form.invalid"
           >
-            {{ authStore.isLoading() ? 'Signing in...' : 'Sign In' }}
+            Sign In
           </button>
         </form>
-        
-        <div class="test-credentials">
-          <p><strong>Admin:</strong> steve@wbenterprises.ca / password</p>
-          <p><strong>User:</strong> user@test.com / password</p>
-        </div>
       </div>
     </div>
-  `,
-  styles: [`
-    .login-container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      background-color: #f5f5f5;
-    }
-    .login-card {
-      background: white;
-      padding: 2rem;
-      border-radius: 8px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-      width: 100%;
-      max-width: 400px;
-    }
-    h2 {
-      margin-bottom: 1.5rem;
-      text-align: center;
-      color: #333;
-    }
-    form {
-      display: flex;
-      flex-direction: column;
-      gap: 1.5rem;
-    }
-    .error-message {
-      color: #d9534f;
-      text-align: center;
-      font-size: 0.9rem;
-    }
-    .test-credentials {
-      margin-top: 2rem;
-      padding: 1rem;
-      background: #f8f9fa;
-      border-radius: 4px;
-      font-size: 0.8rem;
-      color: #666;
-    }
-    button {
-      margin-top: 1rem;
-    }
-  `]
+  `
 })
 export class LoginComponent {
   readonly authStore = inject(AuthStore);
 
   form = new FormGroup({
-    email: new FormControl('steve@wbenterprises.ca', { 
+    email: new FormControl('steve@steve.com', { 
       nonNullable: true, 
       validators: [Validators.required, Validators.email] 
     }),
-    password: new FormControl('password', { 
+    password: new FormControl('Pass1234!', { 
       nonNullable: true, 
       validators: [Validators.required] 
     })

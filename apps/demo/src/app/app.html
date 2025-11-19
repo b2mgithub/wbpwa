@@ -1,3 +1,8 @@
+<!-- Splash Screen Overlay -->
+@if (splashScreen.visible()) {
+<div class="splash-screen" [class.fading-out]="splashScreen.fadingOut()"></div>
+}
+
 <ng-container>
   <div class="demo-header">
     <button
@@ -5,134 +10,145 @@
       [svgIcon]="menuSvg"
       fillMode="flat"
       (click)="drawer.toggle()"
+      title="Toggle Drawer"
+      aria-label="Toggle Drawer"
     ></button>
   </div>
   <kendo-drawer-container>
-    <kendo-drawer 
-      #drawer 
+    <kendo-drawer
+      #drawer
       [mode]="isHandset() ? 'overlay' : 'push'"
       [expanded]="!isHandset()"
     >
       <ng-template kendoDrawerTemplate>
         <ul class="k-drawer-items">
           @if (authStore.isAuthenticated()) {
-            <li class="k-drawer-item">
-              <a
-                class="k-drawer-link"
-                [routerLink]="'/blocks'"
-                (click)="isHandset() && drawer.toggle()"
-              >
-                Blocks
-              </a>
-            </li>
-            <li class="k-drawer-item">
-              <a
-                class="k-drawer-link"
-                [routerLink]="'/reports'"
-                (click)="isHandset() && drawer.toggle()"
-              >
-                Reports
-              </a>
-            </li>
-            <li class="k-drawer-item">
-              <a
-                class="k-drawer-link"
-                [routerLink]="'/products'"
-                (click)="isHandset() && drawer.toggle()"
-              >
-                Products
-              </a>
-            </li>
-            <li class="k-drawer-item">
-              <a
-                class="k-drawer-link"
-                [routerLink]="'/productions'"
-                (click)="isHandset() && drawer.toggle()"
-              >
-                Productions
-              </a>
-            </li>
+          <li class="k-drawer-item">
+            <a
+              class="k-drawer-link"
+              [routerLink]="'/blocks'"
+              (click)="isHandset() && drawer.toggle()"
+            >
+              Blocks
+            </a>
+          </li>
+          <li class="k-drawer-item">
+            <a
+              class="k-drawer-link"
+              [routerLink]="'/reports'"
+              (click)="isHandset() && drawer.toggle()"
+            >
+              Reports
+            </a>
+          </li>
+          <li class="k-drawer-item">
+            <a
+              class="k-drawer-link"
+              [routerLink]="'/products'"
+              (click)="isHandset() && drawer.toggle()"
+            >
+              Products
+            </a>
+          </li>
+          <li class="k-drawer-item">
+            <a
+              class="k-drawer-link"
+              [routerLink]="'/productions'"
+              (click)="isHandset() && drawer.toggle()"
+            >
+              Productions
+            </a>
+          </li>
+          } @if (authStore.isAdmin()) {
+          <li class="k-drawer-item">
+            <a
+              class="k-drawer-link"
+              [routerLink]="'/rates'"
+              (click)="isHandset() && drawer.toggle()"
+            >
+              Rates
+            </a>
+          </li>
+          <li class="k-drawer-item">
+            <a
+              class="k-drawer-link"
+              [routerLink]="'/user'"
+              (click)="isHandset() && drawer.toggle()"
+            >
+              Users
+            </a>
+          </li>
+          } @if (!authStore.isAuthenticated()) {
+          <li class="k-drawer-item">
+            <a
+              class="k-drawer-link"
+              [routerLink]="'/login'"
+              (click)="isHandset() && drawer.toggle()"
+            >
+              Login
+            </a>
+          </li>
+          } @if (authStore.isAuthenticated()) {
+          <li class="k-drawer-item">
+            <a
+              class="k-drawer-link"
+              (click)="authStore.logout(); isHandset() && drawer.toggle()"
+              (keydown.enter)="authStore.logout(); isHandset() && drawer.toggle()"
+              tabindex="0"
+              style="cursor: pointer"
+            >
+              Logout
+            </a>
+          </li>
+          <!--
+          <li class="k-drawer-item">
+            <a
+              class="k-drawer-link"
+              [routerLink]="'/smart-grid'"
+              (click)="isHandset() && drawer.toggle()"
+            >
+              Smart Grid
+            </a>
+          </li>
+
+          <li class="k-drawer-item">
+            <a
+              class="k-drawer-link"
+              [routerLink]="'/test-keyboard'"
+              (click)="isHandset() && drawer.toggle()"
+            >
+              Test Keyboard
+            </a>
+          </li>
+          <li class="k-drawer-item">
+            <a
+              class="k-drawer-link"
+              [routerLink]="'/test-request'"
+              (click)="isHandset() && drawer.toggle()"
+            >
+              Test Request
+            </a>
+          </li>
+          <li class="k-drawer-item">
+            <a
+              class="k-drawer-link"
+              [routerLink]="'/test-sw'"
+              (click)="isHandset() && drawer.toggle()"
+            >
+              Test SW
+            </a>
+          </li>
+          -->
           }
-          @if (authStore.isAdmin()) {
-            <li class="k-drawer-item">
-              <a
-                class="k-drawer-link"
-                [routerLink]="'/rates'"
-                (click)="isHandset() && drawer.toggle()"
-              >
-                Rates
-              </a>
-            </li>
-            <li class="k-drawer-item">
-              <a
-                class="k-drawer-link"
-                [routerLink]="'/user'"
-                (click)="isHandset() && drawer.toggle()"
-              >
-                Users
-              </a>
-            </li>
-          }
-          @if (authStore.isAuthenticated()) {
-            <li class="k-drawer-item">
-              <a
-                class="k-drawer-link"
-                [routerLink]="'/smart-grid'"
-                (click)="isHandset() && drawer.toggle()"
-              >
-                Smart Grid
-              </a>
-            </li>
-            <li class="k-drawer-item">
-              <a
-                class="k-drawer-link"
-                [routerLink]="'/test-keyboard'"
-                (click)="isHandset() && drawer.toggle()"
-              >
-                Test Keyboard
-              </a>
-            </li>
-            <li class="k-drawer-item">
-              <a
-                class="k-drawer-link"
-                [routerLink]="'/test-request'"
-                (click)="isHandset() && drawer.toggle()"
-              >
-                Test Request
-              </a>
-            </li>
-            <li class="k-drawer-item">
-              <a
-                class="k-drawer-link"
-                [routerLink]="'/test-sw'"
-                (click)="isHandset() && drawer.toggle()"
-              >
-                Test SW
-              </a>
-            </li>
-          }
-          @if (!authStore.isAuthenticated()) {
-            <li class="k-drawer-item">
-              <a
-                class="k-drawer-link"
-                [routerLink]="'/login'"
-                (click)="isHandset() && drawer.toggle()"
-              >
-                Login
-              </a>
-            </li>
-          }
-          @if (authStore.isAuthenticated()) {
-            <li class="k-drawer-item">
-              <a
-                class="k-drawer-link"
-                (click)="authStore.logout(); isHandset() && drawer.toggle()"
-                style="cursor: pointer"
-              >
-                Logout
-              </a>
-            </li>
-          }
+          <li class="k-drawer-item">
+            <a
+              class="k-drawer-link"
+              [routerLink]="'/test-idb'"
+              (click)="isHandset() && drawer.toggle()"
+            >
+              Test IDB
+            </a>
+          </li>
         </ul>
       </ng-template>
     </kendo-drawer>

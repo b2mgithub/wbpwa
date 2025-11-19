@@ -1,4 +1,4 @@
-import { computed, inject } from '@angular/core';
+import { computed, inject, Injectable } from '@angular/core';
 
 import { withDevtools } from '@angular-architects/ngrx-toolkit';
 import { signalStore, type, withComputed, withHooks, withMethods } from '@ngrx/signals';
@@ -6,9 +6,17 @@ import { withEntities } from '@ngrx/signals/entities';
 
 import { withOfflineSync } from '@devils-offline/offline-sync';
 import { withGridState, withOfflineDataService } from '@devils-offline/store';
+import { EntityAdapter } from '@devils-offline/idb';
 
+import { environment } from '../../environments/environment';
 import { Rate } from './rates.model';
-import { IDBRatesAdapter } from './rates.adapter';
+
+@Injectable({ providedIn: 'root' })
+export class IDBRatesAdapter extends EntityAdapter<Rate> {
+  constructor() {
+    super({ storeName: 'rates', idField: 'RateId' });
+  }
+}
 
 export const RatesStore = signalStore(
   { providedIn: 'root' },
@@ -24,7 +32,7 @@ export const RatesStore = signalStore(
   
   withOfflineSync<Rate>({
     entityName: 'Rate',
-    apiUrl: 'https://pwacore.b2mapp.ca/api/Rates',
+    apiUrl: `${environment.apiUrl}/Rates`,
     getEntityId: (rate) => rate.RateId,
     updateAllMethod: 'updateAll',
   }),
@@ -71,17 +79,10 @@ export const RatesStore = signalStore(
     onInit(store) {
       const adapter = inject(IDBRatesAdapter);
       
+      // Only initialize adapter - DO NOT load data yet
+      // Data will be loaded by DataHydrationService after successful login
       const init = async () => {
         await adapter.init();
-
-        try {
-          await store['load']();
-          console.log(' Loaded rates from IDB:', store['entities']().length);
-        } catch (err) {
-          console.error(' Failed to load rates from IDB:', err);
-        }
-
-        store['syncFromServer']();
       };
 
       init();

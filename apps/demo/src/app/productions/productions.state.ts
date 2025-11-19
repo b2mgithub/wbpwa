@@ -1,4 +1,4 @@
-import { computed, inject } from '@angular/core';
+import { computed, inject, Injectable } from '@angular/core';
 
 import { withDevtools } from '@angular-architects/ngrx-toolkit';
 import { signalStore, type, withComputed, withHooks, withMethods } from '@ngrx/signals';
@@ -6,9 +6,18 @@ import { withEntities } from '@ngrx/signals/entities';
 
 import { withOfflineSync } from '@devils-offline/offline-sync';
 import { withGridState, withOfflineDataService } from '@devils-offline/store';
+import { EntityAdapter } from '@devils-offline/idb';
 
+import { environment } from '../../environments/environment';
 import { Production } from './productions.model';
-import { IDBProductionsAdapter } from './productions.adapter';
+
+// IDB Adapter - must be exported and injectable for DI to work
+@Injectable({ providedIn: 'root' })
+export class IDBProductionsAdapter extends EntityAdapter<Production> {
+  constructor() {
+    super({ storeName: 'productions', idField: 'ProductionId' });
+  }
+}
 
 export const ProductionsStore = signalStore(
   { providedIn: 'root' },
@@ -24,7 +33,7 @@ export const ProductionsStore = signalStore(
   
   withOfflineSync<Production>({
     entityName: 'Production',
-    apiUrl: 'https://pwacore.b2mapp.ca/api/Productions',
+    apiUrl: `${environment.apiUrl}/Productions`,
     getEntityId: (production) => production.ProductionId,
     updateAllMethod: 'updateAll',
   }),
@@ -71,17 +80,10 @@ export const ProductionsStore = signalStore(
     onInit(store) {
       const adapter = inject(IDBProductionsAdapter);
       
+      // Only initialize adapter - DO NOT load data yet
+      // Data will be loaded by DataHydrationService after successful login
       const init = async () => {
         await adapter.init();
-
-        try {
-          await store['load']();
-          console.log(' Loaded productions from IDB:', store['entities']().length);
-        } catch (err) {
-          console.error(' Failed to load productions from IDB:', err);
-        }
-
-        store['syncFromServer']();
       };
 
       init();

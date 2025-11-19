@@ -1,0 +1,952 @@
+you
+# 🎯 **PWACore - Offline-First Event Sourcing Implementation Plan**
+
+Let me create a comprehensive, phased implementation plan and save it to the `Mds` folder.
+
+```markdown
+# PWACore - Offline-First Event Sourcing Implementation Plan
+
+**Project**: PWACore - Production Logging System with Offline Capabilities  
+**Goal**: Implement toggled event sourcing with Git-style branching, Ableton-style field history, and triple timestamp conflict resolution  
+**Created**: 2025-11-24
+
+---
+
+## 📋 **Executive Summary**
+
+This plan outlines the implementation of a sophisticated offline-first data synchronization system inspired by Git, Ableton Live, and event sourcing patterns. The system will support multiple users editing the same records offline for extended periods (days/weeks) and intelligently merge changes when they reconnect.
+
+### **Key Features**
+1. ✅ **Triple Timestamp Pattern** - Track branch/submit/commit times like Git
+2. ✅ **Full Payload Event Sourcing** - Client sends complete state, server generates patches
+3. ✅ **Field-Level History** - Ableton-style "track view" showing every edit per field
+4. ✅ **Toggled Event Sourcing** - Can be enabled/disabled per entity type
+5. ✅ **Tombstone Soft Deletes** - Never lose data in offline scenarios
+6. ✅ **Git-Style Visualization** - See branching/merging timeline
+7. ✅ **Conflict Resolution UI** - Click-through field history to resolve conflicts
+
+---
+
+## 🏗️ **Phase 1: Foundation & Data Model** (Week 1)
+
+### **1.1 Database Schema - Event Stream Table**
+
+**Goal**: Create append-only event log for Blocks, Productions, and Products
+
+```
+sharp
+// Location: Entities/EventStream.cs
+public class EventStream
+{
+    [Key]
+    public long EventId { get; set; }  // Auto-increment for ordering
+    
+    // Triple Timestamp (Git-style)
+    public DateTimeOffset BranchTimestamp { get; set; }   // When user went offline
+    public DateTimeOffset SubmitTimestamp { get; set; }   // When user saved locally
+    public DateTimeOffset CommitTimestamp { get; set; }   // When server accepted
+    
+    // Aggregate Information
+    public Guid AggregateId { get; set; }        // BlockId, ProductionId, or ProductId
+    public string AggregateType { get; set; }    // "Block", "Production", "Product"
+    public string EventType { get; set; }        // "Created", "Updated", "Deleted"
+    
+    // User Context
+    public Guid UserId { get; set; }
+    public string DeviceId { get; set; }         // From X-Device-Id header
+    
+    // Payload (Full Entity State)
+    public string Payload { get; set; }          // JSON of complete entity
+    
+    // Server-Generated Patch (What Changed)
+    public string? PatchOperations { get; set; } // JsonPatch document
+    
+    // Navigation
+    public User User { get; set; }
+}
+```
+
+**Tasks**:
+- [ ] Create `EventStream` entity class
+- [ ] Add `DbSet<EventStream>` to `DataContext`
+- [ ] Configure indexes:
+  - `(AggregateId, SubmitTimestamp)` for event replay
+  - `(AggregateType, CommitTimestamp)` for sync queries
+- [ ] Create migration: `dotnet ef migrations add AddEventStream`
+
+---
+
+### **1.2 Entity Updates - Add Timestamps & Tombstone**
+
+**Goal**: Update Block, Production, Product entities with event sourcing fields
+
+```
+// Location: Entities/Block.cs, Production.cs, Product.cs
+public abstract class EventSourcedEntity
+{
+    // Triple Timestamp
+    public DateTimeOffset CreatedAt { get; set; }
+    public DateTimeOffset? UpdatedAt { get; set; }
+    public DateTimeOffset? DeletedAt { get; set; }  // Tombstone for soft delete
+    
+    // Table-Level Sync (always present, even if event sourcing disabled)
+    public DateTimeOffset LastModified { get; set; }
+    
+    // Computed property
+    [NotMapped]
+    public bool IsDeleted => DeletedAt.HasValue;
+}
+
+public class Block : EventSourcedEntity
+{
+    [Key]
+    public Guid BlockId { get; set; }
+    
+    public string? Block { get; set; }
+    public string? Description { get; set; }
+    public string? Division { get; set; }
+    // ... existing fields (50+ fields remain unchanged)
+}
+```
+
+**Tasks**:
+- [ ] Create `EventSourcedEntity` base class
+- [ ] Update `Block`, `Production`, `Product` to inherit from base
+- [ ] Add migration: `dotnet ef migrations add AddEventSourcingFields`
+- [ ] Run migration: `dotnet ef database update`
+
+---
+
+### **1.3 Configuration - Toggle Event Sourcing**
+
+**Goal**: Allow event sourcing to be enabled/disabled per environment
+
+```
+
+// Location: appsettings.json
+{
+  "EventSourcing": {
+    "Enabled": true,
+    "RetentionDays": 90,  // Purge events older than 90 days
+    "EnabledEntities": [
+      "Block",
+      "Production", 
+      "Product"
+    ],
+    "ExcludedFields": [
+      "LastModified",
+      "BranchTimestamp"  // Don't track metadata in patches
+    ]
+  }
+}
+```
+
+**Tasks**:
+- [ ] Add `EventSourcingOptions` class in `Helpers/`
+- [ ] Register in `Program.cs`: `services.Configure<EventSourcingOptions>(...)`
+- [ ] Create feature flag helper: `IsEventSourcingEnabled(string entityType)`
+
+---
+
+## 🔧 **Phase 2: Server-Side Event Sourcing** (Week 2)
+
+### **2.1 Event Stream Service - Write Events**
+
+**Goal**: Fire-and-forget event appending with no impact on main transaction
+
+```
+// Location: Services/EventStreamService.cs
+public interface IEventStreamService
+{
+    Task AppendAsync(DomainEvent domainEvent);
+    Task<IEnumerable<EventStream>> GetEventsForAggregateAsync(Guid aggregateId);
+    Task<IEnumerable<EventStream>> GetEventsSinceAsync(DateTimeOffset since, string aggregateType);
+}
+
+public class EventStreamService : IEventStreamService
+{
+    private readonly DataContext _context;
+    private readonly ILogger<EventStreamService> _logger;
+    private readonly EventSourcingOptions _options;
+
+    public async Task AppendAsync(DomainEvent domainEvent)
+    {
+        try
+        {
+            var evt = new EventStream
+            {
+                AggregateId = domainEvent.AggregateId,
+                AggregateType = domainEvent.AggregateType,
+                EventType = domainEvent.EventType,
+                BranchTimestamp = domainEvent.BranchTimestamp,
+                SubmitTimestamp = domainEvent.SubmitTimestamp,
+                CommitTimestamp = DateTimeOffset.UtcNow,
+                UserId = domainEvent.UserId,
+                DeviceId = domainEvent.DeviceId,
+                Payload = domainEvent.Payload,
+                PatchOperations = domainEvent.PatchOperations
+            };
+
+            _context.EventStreams.Add(evt);
+            await _context.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+            // Fire-and-forget: Log but don't throw
+            _logger.LogError(ex, "Failed to append event for {AggregateType} {AggregateId}", 
+                domainEvent.AggregateType, domainEvent.AggregateId);
+        }
+    }
+}
+```
+
+**Tasks**:
+- [ ] Create `DomainEvent` DTO class
+- [ ] Implement `EventStreamService` with all methods
+- [ ] Register in DI: `services.AddScoped<IEventStreamService, EventStreamService>()`
+- [ ] Add unit tests for event appending
+
+---
+
+### **2.2 JsonPatch Generation - Port from Legacy**
+
+**Goal**: Server automatically generates patches by comparing states
+
+```
+// Location: Helpers/JsonPatchHelper.cs
+public static class JsonPatchHelper
+{
+    public static JsonPatchDocument GeneratePatch(object originalState, object newState, 
+        IEnumerable<string> excludedFields = null)
+    {
+        var patchDoc = new JsonPatchDocument();
+        var origJson = JObject.FromObject(originalState);
+        var newJson = JObject.FromObject(newState);
+        
+        FillPatchForObject(origJson, newJson, patchDoc, "/", excludedFields);
+        return patchDoc;
+    }
+    
+    private static void FillPatchForObject(JObject orig, JObject mod, 
+        JsonPatchDocument patch, string path, IEnumerable<string> excludedFields)
+    {
+        // Port logic from .Tmp/VVCore/Controllers/DeltaController.cs
+        // Lines 1338-1395: FillPatchForObjectB
+        
+        var origNames = orig.Properties().Select(x => x.Name).ToArray();
+        var modNames = mod.Properties().Select(x => x.Name).ToArray();
+        
+        // Fields added
+        foreach (var k in modNames.Except(origNames))
+        {
+            if (excludedFields?.Contains(k) == true) continue;
+            var prop = mod.Property(k);
+            patch.Add(path + prop.Name, prop.Value);
+        }
+        
+        // Fields changed
+        foreach (var k in origNames.Intersect(modNames))
+        {
+            if (excludedFields?.Contains(k) == true) continue;
+            
+            var origProp = orig.Property(k);
+            var modProp = mod.Property(k);
+            
+            if (origProp.Value.Type != modProp.Value.Type)
+            {
+                patch.Replace(path + modProp.Name, modProp.Value);
+            }
+            else if (!JToken.DeepEquals(origProp.Value, modProp.Value))
+            {
+                if (origProp.Value.Type == JTokenType.Object)
+                {
+                    FillPatchForObject(origProp.Value as JObject, 
+                        modProp.Value as JObject, patch, path + modProp.Name + "/", excludedFields);
+                }
+                else
+                {
+                    patch.Replace(path + modProp.Name, modProp.Value);
+                }
+            }
+        }
+    }
+}
+```
+
+**Tasks**:
+- [ ] Create `JsonPatchHelper` class
+- [ ] Port `FillPatchForObjectB` logic from legacy code
+- [ ] Add whitespace normalization
+- [ ] Add type coercion detection
+- [ ] Write unit tests with various scenarios
+
+---
+
+### **2.3 CRUD Controllers - Block, Production, Product**
+
+**Goal**: Implement pass-through controllers with event sourcing integration
+
+```
+// Location: Controllers/BlocksController.cs
+[Authorize]
+[ApiController]
+[Route("[controller]")]
+public class BlocksController : BaseController
+{
+    private readonly IBlockService _blockService;
+
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<Block>>> GetAll()
+    {
+        var blocks = await _blockService.GetAllForUserAsync(User.UserId);
+        return Ok(blocks);
+    }
+
+    [HttpGet("{id:guid}")]
+    public async Task<ActionResult<Block>> GetById(Guid id)
+    {
+        var block = await _blockService.GetByIdAsync(id);
+        
+        // Authorization check
+        if (block.Division != User.Division && User.Role != Roles.Admin)
+            return Unauthorized();
+            
+        return Ok(block);
+    }
+
+    [HttpPost]
+    public async Task<ActionResult<Block>> Create(Block model)
+    {
+        // Client provides BlockId (GUID)
+        // Extract timestamps from headers
+        var branchTimestamp = GetTimestampFromHeader("X-Branch-Timestamp");
+        var submitTimestamp = GetTimestampFromHeader("X-Submit-Timestamp");
+        var deviceId = Request.Headers["X-Device-Id"].ToString();
+        
+        var block = await _blockService.CreateAsync(model, User.UserId, deviceId, 
+            branchTimestamp, submitTimestamp);
+        return Ok(block);
+    }
+
+    [HttpPut("{id:guid}")]
+    public async Task<ActionResult<Block>> Update(Guid id, Block model)
+    {
+        var branchTimestamp = GetTimestampFromHeader("X-Branch-Timestamp");
+        var submitTimestamp = GetTimestampFromHeader("X-Submit-Timestamp");
+        var deviceId = Request.Headers["X-Device-Id"].ToString();
+        
+        var block = await _blockService.UpdateAsync(id, model, User.UserId, deviceId,
+            branchTimestamp, submitTimestamp);
+        return Ok(block);
+    }
+
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        var deviceId = Request.Headers["X-Device-Id"].ToString();
+        await _blockService.DeleteAsync(id, User.UserId, deviceId);
+        return Ok(new { message = "Block deleted successfully" });
+    }
+    
+    private DateTimeOffset GetTimestampFromHeader(string headerName)
+    {
+        if (Request.Headers.TryGetValue(headerName, out var value) && 
+            DateTimeOffset.TryParse(value, out var timestamp))
+        {
+            return timestamp;
+        }
+        return DateTimeOffset.UtcNow;
+    }
+}
+```
+
+**Tasks**:
+- [ ] Create `BlocksController` with all CRUD endpoints
+- [ ] Create `ProductionsController` (same pattern)
+- [ ] Create `ProductsController` (same pattern)
+- [ ] Add header extraction helpers
+- [ ] Add authorization checks
+
+---
+
+### **2.4 Services - Business Logic with Event Sourcing**
+
+**Goal**: Services handle CRUD + event stream writing
+
+```
+// Location: Services/BlockService.cs
+public class BlockService : IBlockService
+{
+    private readonly DataContext _context;
+    private readonly IEventStreamService _eventStream;
+    private readonly IOptions<EventSourcingOptions> _options;
+    private readonly ILogger<BlockService> _logger;
+
+    public async Task<Block> CreateAsync(Block model, Guid userId, string deviceId,
+        DateTimeOffset branchTimestamp, DateTimeOffset submitTimestamp)
+    {
+        // Validate BlockId is unique
+        if (await _context.Blocks.AnyAsync(b => b.BlockId == model.BlockId))
+            throw new AppException("Block ID already exists");
+
+        // Set timestamps
+        model.CreatedAt = submitTimestamp;
+        model.LastModified = submitTimestamp;
+
+        // Save to database
+        _context.Blocks.Add(model);
+        await _context.SaveChangesAsync();
+
+        // Write event (if enabled)
+        if (_options.Value.Enabled && _options.Value.EnabledEntities.Contains("Block"))
+        {
+            await _eventStream.AppendAsync(new DomainEvent
+            {
+                AggregateId = model.BlockId,
+                AggregateType = "Block",
+                EventType = "Created",
+                BranchTimestamp = branchTimestamp,
+                SubmitTimestamp = submitTimestamp,
+                UserId = userId,
+                DeviceId = deviceId,
+                Payload = JsonSerializer.Serialize(model),
+                PatchOperations = null  // No patch for create
+            });
+        }
+
+        return model;
+    }
+
+    public async Task<Block> UpdateAsync(Guid blockId, Block model, Guid userId, 
+        string deviceId, DateTimeOffset branchTimestamp, DateTimeOffset submitTimestamp)
+    {
+        var existing = await _context.Blocks.FindAsync(blockId);
+        if (existing == null) throw new KeyNotFoundException("Block not found");
+
+        // Conflict detection: Check if client's LastModified is stale
+        if (model.LastModified < existing.LastModified)
+        {
+            throw new AppException($"Conflict detected. Server has newer data. " +
+                $"Server: {existing.LastModified}, Client: {model.LastModified}");
+        }
+
+        // Generate patch (if event sourcing enabled)
+        JsonPatchDocument patchDoc = null;
+        if (_options.Value.Enabled && _options.Value.EnabledEntities.Contains("Block"))
+        {
+            patchDoc = JsonPatchHelper.GeneratePatch(existing, model, 
+                _options.Value.ExcludedFields);
+        }
+
+        // Update entity
+        _context.Entry(existing).CurrentValues.SetValues(model);
+        existing.UpdatedAt = submitTimestamp;
+        existing.LastModified = submitTimestamp;
+        await _context.SaveChangesAsync();
+
+        // Write event
+        if (patchDoc != null)
+        {
+            await _eventStream.AppendAsync(new DomainEvent
+            {
+                AggregateId = blockId,
+                AggregateType = "Block",
+                EventType = "Updated",
+                BranchTimestamp = branchTimestamp,
+                SubmitTimestamp = submitTimestamp,
+                UserId = userId,
+                DeviceId = deviceId,
+                Payload = JsonSerializer.Serialize(model),
+                PatchOperations = JsonSerializer.Serialize(patchDoc)
+            });
+        }
+
+        return existing;
+    }
+
+    public async Task DeleteAsync(Guid blockId, Guid userId, string deviceId)
+    {
+        var block = await _context.Blocks.FindAsync(blockId);
+        if (block == null) throw new KeyNotFoundException("Block not found");
+
+        // Soft delete (tombstone)
+        block.DeletedAt = DateTimeOffset.UtcNow;
+        block.UpdatedAt = DateTimeOffset.UtcNow;
+        block.LastModified = DateTimeOffset.UtcNow;
+        await _context.SaveChangesAsync();
+
+        // Write event
+        if (_options.Value.Enabled && _options.Value.EnabledEntities.Contains("Block"))
+        {
+            var patchDoc = new JsonPatchDocument();
+            patchDoc.Replace("/DeletedAt", block.DeletedAt);
+            patchDoc.Replace("/Tombstone", true);
+
+            await _eventStream.AppendAsync(new DomainEvent
+            {
+                AggregateId = blockId,
+                AggregateType = "Block",
+                EventType = "Deleted",
+                BranchTimestamp = block.DeletedAt.Value,
+                SubmitTimestamp = block.DeletedAt.Value,
+                UserId = userId,
+                DeviceId = deviceId,
+                Payload = JsonSerializer.Serialize(new { blockId, DeletedAt = block.DeletedAt }),
+                PatchOperations = JsonSerializer.Serialize(patchDoc)
+            });
+        }
+    }
+
+    public async Task<IEnumerable<Block>> GetAllForUserAsync(Guid userId)
+    {
+        var user = await _context.Users.FindAsync(userId);
+        
+        // Filter by division (exclude soft-deleted)
+        var query = _context.Blocks.Where(b => b.DeletedAt == null);
+        
+        if (user?.Role != Roles.Admin)
+            query = query.Where(b => b.Division == user.Division);
+            
+        return await query.ToListAsync();
+    }
+}
+```
+
+**Tasks**:
+- [ ] Create `IBlockService` interface
+- [ ] Implement `BlockService` with all methods
+- [ ] Repeat for `ProductionService` and `ProductService`
+- [ ] Register all services in DI
+- [ ] Add integration tests
+
+---
+
+## 🎨 **Phase 3: Visualization & Conflict Resolution** (Week 3)
+
+### **3.1 History Endpoint - Git Graph Visualization**
+
+**Goal**: Expose event history for a record with Git-style timeline
+
+```
+// Location: Controllers/BlocksController.cs
+[HttpGet("{id:guid}/history")]
+public async Task<ActionResult<BlockHistoryResponse>> GetHistory(Guid id)
+{
+    var events = await _context.EventStreams
+        .Where(e => e.AggregateId == id && e.AggregateType == "Block")
+        .OrderBy(e => e.SubmitTimestamp)
+        .Include(e => e.User)
+        .ToListAsync();
+
+    if (!events.Any())
+        return NotFound();
+
+    // Build field-level history (Ableton tracks)
+    var fieldHistory = new Dictionary<string, List<FieldEdit>>();
+    
+    foreach (var evt in events)
+    {
+        var payload = JObject.Parse(evt.Payload);
+        foreach (var prop in payload.Properties())
+        {
+            if (!fieldHistory.ContainsKey(prop.Name))
+                fieldHistory[prop.Name] = new List<FieldEdit>();
+            
+            fieldHistory[prop.Name].Add(new FieldEdit
+            {
+                EventId = evt.EventId,
+                UserId = evt.UserId,
+                UserName = $"{evt.User.FirstName} {evt.User.LastName}",
+                DeviceId = evt.DeviceId,
+                BranchTimestamp = evt.BranchTimestamp,
+                SubmitTimestamp = evt.SubmitTimestamp,
+                CommitTimestamp = evt.CommitTimestamp,
+                Value = prop.Value,
+                EventType = evt.EventType
+            });
+        }
+    }
+
+    // Build Git-style timeline
+    var timeline = events.Select(e => new TimelineEvent
+    {
+        EventId = e.EventId,
+        EventType = e.EventType,
+        BranchTimestamp = e.BranchTimestamp,
+        SubmitTimestamp = e.SubmitTimestamp,
+        CommitTimestamp = e.CommitTimestamp,
+        UserId = e.UserId,
+        UserName = $"{e.User.FirstName} {e.User.LastName}",
+        DeviceId = e.DeviceId,
+        PatchOperations = e.PatchOperations != null 
+            ? JsonSerializer.Deserialize<JsonPatchDocument>(e.PatchOperations) 
+            : null
+    }).ToList();
+
+    return Ok(new BlockHistoryResponse
+    {
+        BlockId = id,
+        FieldTimelines = fieldHistory.Select(kvp => new FieldTimeline
+        {
+            FieldName = kvp.Key,
+            CurrentValue = kvp.Value.LastOrDefault()?.Value,
+            History = kvp.Value.OrderByDescending(e => e.SubmitTimestamp).ToList()
+        }).ToList(),
+        GitTimeline = timeline
+    });
+}
+```
+
+**Tasks**:
+- [ ] Create `BlockHistoryResponse` DTO
+- [ ] Create `FieldTimeline` and `FieldEdit` DTOs
+- [ ] Create `TimelineEvent` DTO
+- [ ] Add history endpoint to all three controllers
+- [ ] Add unit tests
+
+---
+
+### **3.2 Delta Controller - Port Legacy Visualization**
+
+**Goal**: Port Shazaam/Shazuum endpoints for admin debugging
+
+```
+// Location: Controllers/DeltaController.cs
+[Authorize(Roles.Admin)]
+[ApiController]
+[Route("api/[controller]")]
+public class DeltaController : BaseController
+{
+    private readonly DataContext _context;
+    
+    [HttpGet("Visualize/{aggregateType}/{id:guid}")]
+    public async Task<ContentResult> Visualize(string aggregateType, Guid id)
+    {
+        // Port logic from .Tmp/VVCore/Controllers/DeltaController.cs
+        // Lines 46-1073: Shazaam method
+        
+        var events = await _context.EventStreams
+            .Where(e => e.AggregateId == id && e.AggregateType == aggregateType)
+            .OrderBy(e => e.SubmitTimestamp)
+            .Include(e => e.User)
+            .ToListAsync();
+            
+        // Build "spreads" (Branch/Submit/Commit interleaved timeline)
+        var spreads = BuildSpreadsTimeline(events);
+        
+        // Generate Git graph ASCII art with colors
+        var gitGraph = RenderGitGraph(spreads);
+        
+        // Build field-level patch history
+        var patchHistory = BuildPatchHistory(events);
+        
+        // Compare event-sourced state vs current table state
+        var conflictCheck = CheckForConflicts(id, aggregateType, events);
+        
+        return Content(RenderHtml(gitGraph, patchHistory, conflictCheck), "text/html");
+    }
+    
+    // Helper methods ported from legacy code
+    private List<Spread> BuildSpreadsTimeline(List<EventStream> events) { /* ... */ }
+    private string RenderGitGraph(List<Spread> spreads) { /* ... */ }
+    private Dictionary<string, List<FieldValue>> BuildPatchHistory(List<EventStream> events) { /* ... */ }
+    private ConflictReport CheckForConflicts(Guid id, string type, List<EventStream> events) { /* ... */ }
+}
+```
+
+**Tasks**:
+- [ ] Create `DeltaController`
+- [ ] Port `BuildSpreadsTimeline` logic
+- [ ] Port `RenderGitGraph` ASCII visualization
+- [ ] Port `BuildPatchHistory` field tracking
+- [ ] Create HTML template for rendering
+- [ ] Add tests with sample data
+
+---
+
+### **3.3 Conflict Resolution UI Endpoint**
+
+**Goal**: Provide data for client-side conflict resolution UI
+
+```
+// Location: Controllers/BlocksController.cs
+[HttpPost("{id:guid}/resolve-conflict")]
+public async Task<ActionResult<Block>> ResolveConflict(Guid id, 
+    [FromBody] ConflictResolution resolution)
+{
+    // Get all events for this block
+    var events = await _context.EventStreams
+        .Where(e => e.AggregateId == id && e.AggregateType == "Block")
+        .OrderBy(e => e.SubmitTimestamp)
+        .ToListAsync();
+
+    // Rebuild state from events
+    var rebuiltState = ReplayEvents(events);
+    
+    // Get current table state
+    var currentState = await _context.Blocks.FindAsync(id);
+    
+    // User selected resolution strategy
+    var resolvedBlock = resolution.Strategy switch
+    {
+        ConflictStrategy.TakeServer => currentState,
+        ConflictStrategy.TakeClient => JsonSerializer.Deserialize<Block>(resolution.ClientState),
+        ConflictStrategy.FieldByField => ApplyFieldResolutions(currentState, resolution.FieldChoices),
+        ConflictStrategy.TakeEventSourced => rebuiltState,
+        _ => throw new AppException("Invalid conflict strategy")
+    };
+
+    // Update with resolved state
+    return await UpdateAsync(id, resolvedBlock, User.UserId, 
+        Request.Headers["X-Device-Id"], DateTimeOffset.UtcNow, DateTimeOffset.UtcNow);
+}
+
+private Block ReplayEvents(List<EventStream> events)
+{
+    Block state = null;
+    
+    foreach (var evt in events.OrderBy(e => e.SubmitTimestamp))
+    {
+        if (evt.EventType == "Created")
+        {
+            state = JsonSerializer.Deserialize<Block>(evt.Payload);
+        }
+        else if (evt.EventType == "Updated" && evt.PatchOperations != null)
+        {
+            var patch = JsonSerializer.Deserialize<JsonPatchDocument>(evt.PatchOperations);
+            var stateJson = JObject.FromObject(state);
+            patch.ApplyTo(stateJson);
+            state = stateJson.ToObject<Block>();
+        }
+    }
+    
+    return state;
+}
+```
+
+**Tasks**:
+- [ ] Create `ConflictResolution` DTO
+- [ ] Create `ConflictStrategy` enum
+- [ ] Implement `ReplayEvents` method
+- [ ] Implement `ApplyFieldResolutions` method
+- [ ] Add conflict resolution endpoints to all controllers
+- [ ] Add integration tests
+
+---
+
+## 📱 **Phase 4: Client Integration (Future)** (Week 4+)
+
+### **4.1 PWA Client - IndexedDB Schema**
+
+```
+// Offline storage for Blocks
+interface BlockRecord {
+  blockId: string;
+  block: string;
+  description: string;
+  division: string;
+  // ... all 50+ fields
+  
+  // Timestamps
+  createdAt: Date;
+  updatedAt?: Date;
+  deletedAt?: Date;
+  lastModified: Date;
+  
+  // Sync metadata
+  deviceId: string;
+  branchTimestamp: Date;      // When we went offline
+  lastSyncedAt?: Date;        // Last successful sync to server
+  isDirty: boolean;           // Has unsaved changes
+  syncStatus: 'pending' | 'synced' | 'conflict';
+}
+```
+
+**Tasks**:
+- [ ] Define IndexedDB schema
+- [ ] Implement offline CRUD operations
+- [ ] Implement sync strategy
+- [ ] Handle conflict detection
+- [ ] Build conflict resolution UI
+
+---
+
+### **4.2 Sync Strategy**
+
+```
+async function syncToServer(block: BlockRecord): Promise<void> {
+  const headers = {
+    'Authorization': `Bearer ${jwt}`,
+    'X-Device-Id': deviceId,
+    'X-Branch-Timestamp': block.branchTimestamp.toISOString(),
+    'X-Submit-Timestamp': new Date().toISOString()
+  };
+  
+  try {
+    const response = await fetch(`/api/blocks/${block.blockId}`, {
+      method: 'PUT',
+      headers: { ...headers, 'Content-Type': 'application/json' },
+      body: JSON.stringify(block)  // FULL state, not delta!
+    });
+    
+    if (response.ok) {
+      block.lastSyncedAt = new Date();
+      block.isDirty = false;
+      block.syncStatus = 'synced';
+    } else if (response.status === 409) {
+      // Conflict detected
+      const conflict = await response.json();
+      block.syncStatus = 'conflict';
+      showConflictResolutionUI(block, conflict);
+    }
+  } catch (error) {
+    // Still offline, keep as pending
+  }
+}
+```
+
+**Tasks**:
+- [ ] Implement sync service
+- [ ] Implement background sync
+- [ ] Handle conflicts
+- [ ] Build UI components
+
+---
+
+## 🧪 **Phase 5: Testing & Refinement** (Week 5)
+
+### **5.1 Integration Tests**
+
+```
+// Test scenarios:
+// 1. User creates Block offline, syncs → Success
+// 2. Two users edit same Block offline, sync → Conflict detected
+// 3. User deletes Block offline, another edits → Tombstone conflict
+// 4. Event sourcing disabled → Table-only updates work
+// 5. Event replay rebuilds correct state
+```
+
+**Tasks**:
+- [ ] Write integration tests for all CRUD operations
+- [ ] Write conflict scenario tests
+- [ ] Write event replay tests
+- [ ] Write performance tests
+- [ ] Load test event stream queries
+
+---
+
+### **5.2 Admin Tools**
+
+```
+// Tools for debugging/monitoring:
+// 1. Event stream viewer (DeltaController)
+// 2. Conflict report dashboard
+// 3. Event purge/cleanup utilities
+// 4. State rebuild tool (replay events)
+```
+
+**Tasks**:
+- [ ] Build admin dashboard
+- [ ] Add event stream metrics
+- [ ] Add conflict metrics
+- [ ] Create cleanup job
+
+---
+
+## 📊 **Success Criteria**
+
+1. ✅ **Offline Support**: Multiple users can edit same record offline for 7+ days
+2. ✅ **No Data Loss**: Every edit captured in event stream
+3. ✅ **Conflict Resolution**: UI allows field-by-field conflict resolution
+4. ✅ **Performance**: Event sourcing adds <100ms overhead per request
+5. ✅ **Toggle**: Can enable/disable event sourcing without code changes
+6. ✅ **Visualization**: Admin can see Git-style edit history
+7. ✅ **Auditability**: Full audit trail of who changed what when
+
+---
+
+## 📝 **Technical Decisions**
+
+| Decision | Choice | Rationale |
+|----------|--------|-----------|
+| **Payload Format** | Full entity state | Simplifies client logic, no delta calculation needed |
+| **Patch Generation** | Server-side | Consistent, no client version skew |
+| **Conflict Detection** | `LastModified` timestamp | Fast check before event replay |
+| **Soft Delete** | `DeletedAt` tombstone | Required for offline sync |
+| **Event Retention** | 90 days | Balance audit needs vs storage |
+| **Toggle Mechanism** | Configuration file | Easy to enable/disable per environment |
+
+---
+
+## 🚀 **Deployment Plan**
+
+### **Phase 1: Development Environment**
+- [ ] Deploy to dev with event sourcing **enabled**
+- [ ] Test all scenarios with real data
+- [ ] Verify visualization tools work
+
+### **Phase 2: Staging Environment**
+- [ ] Deploy to staging with event sourcing **enabled**
+- [ ] Run load tests
+- [ ] Test conflict scenarios with multiple devices
+
+### **Phase 3: Production Rollout**
+- [ ] Deploy to prod with event sourcing **disabled** initially
+- [ ] Monitor performance for 1 week
+- [ ] Enable event sourcing for `Product` entity only (test)
+- [ ] After 1 week, enable for `Block` and `Production`
+
+---
+
+## 📚 **References**
+
+- [Legacy DeltaController.cs](.Tmp/VVCore/Controllers/DeltaController.cs) - Event sourcing implementation
+- [ASP.NET Core JsonPatch](https://learn.microsoft.com/en-us/aspnet/core/web-api/jsonpatch)
+- [Event Sourcing Pattern](https://martinfowler.com/eaaDev/EventSourcing.html)
+- [Git Internals](https://git-scm.com/book/en/v2/Git-Internals-Git-Objects)
+
+---
+
+## 🎯 **Next Steps**
+
+1. Review and approve this plan
+2. Create GitHub issues for each task
+3. Set up project board for tracking
+4. Begin Phase 1: Foundation & Data Model
+
+**Estimated Timeline**: 5 weeks for full implementation  
+**Team Size**: 1-2 developers  
+**Dependencies**: None (all in-house)
+
+---
+
+*Generated: 2025-11-24*  
+*Status: DRAFT - Awaiting Approval*
+```
+
+---
+
+## ✅ **Plan Summary**
+
+I've created a comprehensive 5-phase implementation plan that covers:
+
+1. **Phase 1** - Database schema, entity updates, configuration (Week 1)
+2. **Phase 2** - Server-side event sourcing, CRUD controllers, services (Week 2)
+3. **Phase 3** - Visualization endpoints, conflict resolution (Week 3)
+4. **Phase 4** - PWA client integration (Week 4+)
+5. **Phase 5** - Testing, admin tools, refinement (Week 5)
+
+The plan is saved to `Mds/implementation-plan.md` for reference.
+
+**Key Highlights**:
+- ✅ Toggled event sourcing (can enable/disable per entity)
+- ✅ Triple timestamp pattern (Branch/Submit/Commit)
+- ✅ Full payload + server-generated patches
+- ✅ Field-level history (Ableton tracks)
+- ✅ Git-style visualization
+- ✅ Conflict resolution strategies
+- ✅ Tombstone soft deletes
+- ✅ Production-ready with phased rollout plan
+
+Ready to start implementation? I can begin with Phase 1 tasks or answer any questions about the plan!
+

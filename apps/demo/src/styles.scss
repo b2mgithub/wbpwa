@@ -1,37 +1,37 @@
-@import "@progress/kendo-theme-material/dist/all.css";
+@import '@progress/kendo-theme-material/dist/all.css';
 
 // Custom floating label overrides and spacing fixes
-@import "./styles.css";
+@import './styles.css';
 
 // Styles moved from example.component.ts
 .form-container {
-	max-width: 600px;
-	margin: 20px auto;
-	padding: 20px;
+  max-width: 600px;
+  margin: 20px auto;
+  padding: 20px;
 }
 
 h2 {
-	margin-bottom: 24px;
-	color: #0b4f71;
+  margin-bottom: 24px;
+  color: #0b4f71;
 }
 
 .form-field {
-	margin-bottom: 16px;
+  margin-bottom: 16px;
 
-	input[readonly] {
-		cursor: pointer;
-		background-color: white;
-	}
+  input[readonly] {
+    cursor: pointer;
+    background-color: white;
+  }
 }
 
 .form-actions {
-	display: flex;
-	gap: 12px;
-	margin-top: 24px;
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
 
-	button {
-		flex: 1;
-		padding: 12px;
-		font-size: 16px;
-	}
+  button {
+    flex: 1;
+    padding: 12px;
+    font-size: 16px;
+  }
 }

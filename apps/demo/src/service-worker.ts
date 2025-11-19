@@ -12,6 +12,20 @@ import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 
 declare const self: ServiceWorkerGlobalScope & { currentUserId?: string };
 
+// Service Worker Version - increment this to force cache invalidation
+const VERSION = '2025-11-28-v1';
+console.log(`🔧 Service Worker Version: ${VERSION}`);
+
+// Apply version to all cache names
+const CACHE_PREFIX = `devils-offline-${VERSION}`;
+const CACHES = {
+  api: `${CACHE_PREFIX}-api`,
+  fonts: `${CACHE_PREFIX}-fonts`,
+  fontFiles: `${CACHE_PREFIX}-font-files`,
+  images: `${CACHE_PREFIX}-images`,
+  kendo: `${CACHE_PREFIX}-kendo`
+};
+
 // Background Sync API types
 interface SyncEvent extends ExtendableEvent {
   readonly tag: string;
@@ -56,7 +70,7 @@ registerRoute(
     url.pathname.startsWith('/api/') && 
     request.method === 'GET',
   new NetworkFirst({
-    cacheName: 'api-cache',
+    cacheName: CACHES.api,
     plugins: [
       new CacheableResponsePlugin({
         statuses: [0, 200], // Cache successful responses
@@ -77,7 +91,7 @@ registerRoute(
 registerRoute(
   ({ url }) => url.origin === 'https://fonts.googleapis.com',
   new StaleWhileRevalidate({
-    cacheName: 'google-fonts-stylesheets',
+    cacheName: CACHES.fonts,
   })
 );
 
@@ -85,7 +99,7 @@ registerRoute(
 registerRoute(
   ({ url }) => url.origin === 'https://fonts.gstatic.com',
   new CacheFirst({
-    cacheName: 'google-fonts-webfonts',
+    cacheName: CACHES.fontFiles,
     plugins: [
       new CacheableResponsePlugin({
         statuses: [0, 200],
@@ -102,7 +116,7 @@ registerRoute(
 registerRoute(
   ({ request }) => request.destination === 'image',
   new CacheFirst({
-    cacheName: 'images',
+    cacheName: CACHES.images,
     plugins: [
       new CacheableResponsePlugin({
         statuses: [0, 200],
@@ -119,7 +133,7 @@ registerRoute(
 registerRoute(
   ({ url }) => url.origin === 'https://kendo.cdn.telerik.com',
   new CacheFirst({
-    cacheName: 'kendo-assets',
+    cacheName: CACHES.kendo,
     plugins: [
       new CacheableResponsePlugin({
         statuses: [0, 200],

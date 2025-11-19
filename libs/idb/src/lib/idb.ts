@@ -1,19 +1,5 @@
-import { IDBPDatabase, openDB } from 'idb';
+import { IDBPDatabase, openDB, deleteDB } from 'idb';
 
-function getUserId(): string {
-  try {
-    const authUser = localStorage.getItem('authUser');
-    if (authUser) {
-      const user = JSON.parse(authUser);
-      return user.UserId || 'default';
-    }
-  } catch (error) {
-    console.error('Failed to parse authUser from localStorage:', error);
-  }
-  return 'default';
-}
-
-export const getDbName = () => `DevilsOfflineDB-${getUserId()}`;
 export const STATES_STORE = 'states';
 export const REQUESTS_STORE = 'requests';
 
@@ -51,24 +37,21 @@ export class DevilsOfflineDB {
   private initPromise: Promise<void> | null = null;
 
   public async init(): Promise<void> {
-    if (this.db) return;
-    if (this.initPromise) return this.initPromise;
-
-    this.initPromise = this._init();
-    await this.initPromise;
-    this.initPromise = null;
+    // Do nothing - DB is created on login via switchDatabase
+    // Before login, no database is needed
   }
 
   private async _init(): Promise<void> {
-    const dbName = getDbName();
-    this.db = await openDB<DevilsOfflineDBSchema>(dbName, 4, {
+    // Removed - DB is now created explicitly via switchDatabase(userId)
+  }
+
+  private async open(dbName: string): Promise<void> {
+    this.db = await openDB<DevilsOfflineDBSchema>(dbName, 5, {
       upgrade(db, oldVersion) {
         // Version 1: products store (managed by product-specific adapter)
         if (oldVersion < 1) {
           if (!db.objectStoreNames.contains('products')) {
-            const store = db.createObjectStore('products', { keyPath: 'ProductId' });
-            store.createIndex('by-category', 'Category', { unique: false });
-            store.createIndex('by-name', 'ProductName', { unique: false });
+            db.createObjectStore('products', { keyPath: 'ProductId' });
           }
         }
         // Version 2: states store for UI states
@@ -80,24 +63,46 @@ export class DevilsOfflineDB {
         // Version 3: requests store for failed server requests
         if (oldVersion < 3) {
           if (!db.objectStoreNames.contains(REQUESTS_STORE)) {
-            const store = db.createObjectStore(REQUESTS_STORE, { keyPath: 'id' });
-            store.createIndex('by-timestamp', 'timestamp', { unique: false });
-            store.createIndex('by-productId', 'productId', { unique: false });
+            db.createObjectStore(REQUESTS_STORE, { keyPath: 'id' });
           }
         }
         // Version 4: productions and rates stores
         if (oldVersion < 4) {
           if (!db.objectStoreNames.contains('productions')) {
-            const store = db.createObjectStore('productions', { keyPath: 'ProductionId' });
-            store.createIndex('by-name', 'ProductionName', { unique: false });
+            db.createObjectStore('productions', { keyPath: 'ProductionId' });
           }
           if (!db.objectStoreNames.contains('rates')) {
-            const store = db.createObjectStore('rates', { keyPath: 'RateId' });
-            store.createIndex('by-type', 'RateType', { unique: false });
+            db.createObjectStore('rates', { keyPath: 'RateId' });
+          }
+        }
+        // Version 5: blocks store
+        if (oldVersion < 5) {
+          if (!db.objectStoreNames.contains('blocks')) {
+            db.createObjectStore('blocks', { keyPath: 'BlockId' });
           }
         }
       },
     });
+  }
+
+  public async switchDatabase(userId: string): Promise<void> {
+    if (this.db) {
+      this.db.close();
+      this.db = null;
+    }
+    const dbName = `DevilsOfflineDB-${userId}`;
+    console.log('Switching to DB:', dbName);
+    await this.open(dbName);
+  }
+
+  public async deleteCurrentDatabase(): Promise<void> {
+    if (this.db) {
+      const name = this.db.name;
+      this.db.close();
+      this.db = null;
+      await deleteDB(name);
+      console.log('Deleted DB:', name);
+    }
   }
 
   public async readState<T = unknown>(key: string): Promise<T | undefined> {
@@ -173,5 +178,57 @@ export class DevilsOfflineDB {
   }
 }
 
-export const devilsOfflineDB = new DevilsOfflineDB();
+// AuthDB manages the fixed-name "DevilsOffline-Auth" database
+// This is the "Reception Desk" that stores the current user
+export interface AuthDBSchema {
+  currentUser: {
+    key: string;
+    value: unknown;
+  };
+}
 
+export class AuthDB {
+  private db: IDBPDatabase<AuthDBSchema> | null = null;
+  private readonly AUTH_DB_NAME = 'DevilsOffline-Auth';
+  private readonly AUTH_DB_VERSION = 1;
+
+  public async init(): Promise<void> {
+    if (this.db) return;
+    
+    this.db = await openDB<AuthDBSchema>(this.AUTH_DB_NAME, this.AUTH_DB_VERSION, {
+      upgrade(db) {
+        if (!db.objectStoreNames.contains('currentUser')) {
+          db.createObjectStore('currentUser');
+        }
+      },
+    });
+  }
+
+  public async setCurrentUser(user: unknown): Promise<void> {
+    await this.init();
+    if (!this.db) return;
+    await this.db.put('currentUser', user, 'current');
+    console.log('💾 Saved current user to Auth DB');
+  }
+
+  public async getCurrentUser<T = unknown>(): Promise<T | null> {
+    await this.init();
+    if (!this.db) return null;
+    const user = await this.db.get('currentUser', 'current');
+    return (user as T) || null;
+  }
+
+  public async clearCurrentUser(): Promise<void> {
+    await this.init();
+    if (!this.db) return;
+    await this.db.delete('currentUser', 'current');
+    console.log('🗑️ Cleared current user from Auth DB');
+  }
+
+  public getDB(): IDBPDatabase<AuthDBSchema> | null {
+    return this.db;
+  }
+}
+
+export const authDB = new AuthDB();
+export const devilsOfflineDB = new DevilsOfflineDB();

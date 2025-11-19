@@ -81,8 +81,6 @@ export function withGridState(config: WithGridStateConfig) {
     
     withHooks({
       onInit(store) {
-        console.log('🎬 withGridState onInit - initial gridState:', store['gridState']());
-        
         // Resolve adapter: allow either an instance, or a class token that can be injected
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let adapter: any = adapterInstance ?? null;
@@ -106,21 +104,15 @@ export function withGridState(config: WithGridStateConfig) {
           
           // Load grid state from IDB
           const gridState = await adapter.readState(storageKey).catch(() => null);
-          console.log('📊 Read grid state from IDB:', gridState);
           
           if (gridState) {
             const sanitized = sanitizeGridState(gridState);
-            console.log('📊 Sanitized grid state (about to update store):', sanitized);
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             updateState(store, '[Grid] Hydrate Grid State', { gridState: sanitized } as any);
-            console.log('📊 Store gridState after hydration:', store['gridState']());
-          } else {
-            console.log('📊 No grid state found in IDB, using defaults');
           }
           
           // Mark hydration as complete BEFORE starting persistence subscription
           hydrationComplete = true;
-          console.log('✅ Grid state hydration complete, enabling persistence');
         };
         
         init();
@@ -134,7 +126,6 @@ export function withGridState(config: WithGridStateConfig) {
             map((s) => sanitizeGridState(s)),
             distinctUntilChanged(gridStatesEqual),
             tap(async (s) => {
-              console.log('💾 Persisting grid state to IDB:', s);
               await adapter.persistState(storageKey, s).catch((err: unknown) => 
                 console.error('Failed to persist gridState', err)
               );

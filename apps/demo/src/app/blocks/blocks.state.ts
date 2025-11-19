@@ -1,4 +1,4 @@
-import { computed, inject } from '@angular/core';
+import { computed, inject, Injectable } from '@angular/core';
 
 import { withDevtools } from '@angular-architects/ngrx-toolkit';
 import { signalStore, type, withComputed, withHooks } from '@ngrx/signals';
@@ -6,9 +6,17 @@ import { withEntities } from '@ngrx/signals/entities';
 
 import { withOfflineSync } from '@devils-offline/offline-sync';
 import { withGridState, withOfflineDataService } from '@devils-offline/store';
+import { EntityAdapter } from '@devils-offline/idb';
 
+import { environment } from '../../environments/environment';
 import { Block } from './blocks.model';
-import { IDBBlocksAdapter } from './blocks.adapter';
+
+@Injectable({ providedIn: 'root' })
+export class IDBBlocksAdapter extends EntityAdapter<Block> {
+  constructor() {
+    super({ storeName: 'blocks', idField: 'BlockId' });
+  }
+}
 
 export const BlocksStore = signalStore(
   { providedIn: 'root' },
@@ -24,7 +32,7 @@ export const BlocksStore = signalStore(
 
   withOfflineSync<Block>({
     entityName: 'Block',
-    apiUrl: 'https://pwacore.b2mapp.ca/api/Blocks',
+    apiUrl: `${environment.apiUrl}/Blocks`,
     getEntityId: (block) => block.BlockId,
     updateAllMethod: 'updateAll',
   }),
@@ -47,17 +55,10 @@ export const BlocksStore = signalStore(
     onInit(store) {
       const adapter = inject(IDBBlocksAdapter);
       
+      // Only initialize adapter - DO NOT load data yet
+      // Data will be loaded by DataHydrationService after successful login
       const init = async () => {
         await adapter.init();
-
-        try {
-          await store['load']();
-          console.log('📦 Loaded blocks from IDB:', store['entities']().length);
-        } catch (err) {
-          console.error('❌ Failed to load blocks from IDB:', err);
-        }
-
-        store['syncFromServer']();
       };
 
       init();

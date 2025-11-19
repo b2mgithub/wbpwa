@@ -13,6 +13,7 @@ import { SmartGridComponent } from './smart-grid/smart-grid.component';
 import { TestKeyboardComponent } from './test-keyboard/test-keyboard.component';
 import { TestRequestComponent } from './test-request/test-request.component';
 import { TestSwComponent } from './test-sw/test-sw.component';
+import { TestIdbComponent } from './test-idb/test-idb.component';
 
 import { LoginComponent } from '@devils-offline/auth/feature-login';
 import { authGuard, adminGuard } from '@devils-offline/auth/util-guards';
@@ -72,4 +73,5 @@ export const appRoutes: Route[] = [
   { path: 'test-sw', component: TestSwComponent, canActivate: [authGuard] },
   { path: 'test-keyboard', component: TestKeyboardComponent, canActivate: [authGuard] },
   { path: 'smart-grid', component: SmartGridComponent, canActivate: [authGuard] },
+  { path: 'test-idb', component: TestIdbComponent },
 ];

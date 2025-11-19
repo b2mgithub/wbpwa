@@ -27,10 +27,11 @@ export const fakeBackendInterceptor: HttpInterceptorFn = (req, next) => {
   return handleRoute();
 
   function handleRoute() {
-    console.log('FakeBackend:', method, url);
+    // Pass through to real backend
+    // console.log('FakeBackend:', method, url);
     switch (true) {
       case url.endsWith('/api/auth/login') && method === 'POST':
-        console.log('FakeBackend: Handling Login');
+        // console.log('FakeBackend: Handling Login');
         return login();
       case url.endsWith('/api/auth/refresh-token') && method === 'POST':
         return refreshToken();
@@ -53,7 +54,7 @@ export const fakeBackendInterceptor: HttpInterceptorFn = (req, next) => {
     const { email, password } = body as any;
     const user = users.find((x) => x.Email === email);
 
-    if (!user || password !== 'password') {
+    if (!user || password !== 'DevilsOffline!2025') {
       return error('Email or password is incorrect');
     }
 

@@ -1,0 +1,55 @@
+<kendo-grid
+    [data]="view$ | async"
+    [pageSize]="gridState$.value.take"
+    [skip]="gridState$.value.skip"
+    [sort]="gridState$.value.sort"
+    [filter]="gridState$.value.filter"
+    [group]="gridState$.value.group"
+    [groupable]="false"
+    [filterable]="false"
+    [sortable]="true"
+    [pageable]="true"
+    [scrollable]="'scrollable'"
+    [height]="800"
+    (add)="addHandler()"
+    (edit)="editHandler($event)" 
+    (remove)="removeHandler($event)"
+    (dataStateChange)="dataStateChange($event)"
+      >
+      <ng-template kendoGridToolbarTemplate>
+        <button kendoGridAddCommand>Add new</button>
+    </ng-template>
+    <kendo-grid-column hidden="true" field="UProductionId" width="120"></kendo-grid-column>
+    <kendo-grid-column hidden="true" field="UserId" title="UserId"></kendo-grid-column>
+    <kendo-grid-column hidden="true" field="UBlockId" title="UBlockId"></kendo-grid-column>
+    <kendo-grid-column field="Date" title="Date">
+      <ng-template kendoGridCellTemplate let-dataItem>
+          {{dataItem.Date | date: 'MM/dd/yyyy'}}
+      </ng-template>
+    </kendo-grid-column>
+    <ng-template kendoGridDetailTemplate let-dataItem>
+      <section *ngIf="dataItem.Harvesting">
+        <p><strong>Harvesting:</strong> {{dataItem.Harvesting | json}}</p>
+      </section>
+      <section *ngIf="dataItem.RoadConstruction">
+        <p><strong>RoadConstruction:</strong> {{dataItem.RoadConstruction | json}}</p>
+      </section>
+      <section *ngIf="dataItem.Graveling">
+        <p><strong>Graveling:</strong> {{dataItem.Graveling | json}}</p>
+      </section>
+    </ng-template>
+    <kendo-grid-command-column  width="240">
+      <ng-template kendoGridCellTemplate>
+          <button kendoGridEditCommand [primary]="true">Edit</button>
+          <button kendoGridRemoveCommand>Remove</button>
+      </ng-template>
+  </kendo-grid-command-column>
+</kendo-grid>
+
+<wbapp-productions-child-edit [model]="editDataItem" [isNew]="isNew"
+        (save)="saveHandler($event)"
+        (cancel)="cancelHandler()">
+</wbapp-productions-child-edit>
+
+
+

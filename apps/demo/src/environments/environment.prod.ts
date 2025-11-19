@@ -1,13 +1,18 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://pwacore.b2mapp.ca/api',
+  apiUrl: 'https://pwacore.b2mapp.ca',
   hubUrl: 'https://pwacore.b2mapp.ca/hubs',
+  
+  // Splash Screen (enabled in production for polished UX)
+  showSplashScreen: true,
+  splashDisplayDuration: 2000,
+  splashFadeDuration: 500,
   
   // AI Provider: 'github' or 'ollama'
   aiProvider: 'ollama' as 'github' | 'ollama',
   
   // GitHub Models API
-  githubToken: 'REMOVED_SECRET',
+  githubToken: '', // Set via environment variable in production
   githubModel: 'gpt-4o',
   githubUrl: 'https://models.inference.ai.azure.com/chat/completions',
   

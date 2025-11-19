@@ -4,8 +4,13 @@
 
 export const environment = {
   production: false,
-  apiUrl: 'https://pwacore.b2mapp.ca/api',
+  apiUrl: 'https://pwacore.b2mapp.ca',
   hubUrl: 'https://pwacore.b2mapp.ca/hubs',
+  
+  // Splash Screen (disabled in dev for faster iteration)
+  showSplashScreen: true,
+  splashDisplayDuration: 2000,
+  splashFadeDuration: 500,
   
   // AI Provider: 'github' or 'ollama'
   aiProvider: 'ollama' as 'github' | 'ollama',
@@ -13,7 +18,7 @@ export const environment = {
   // GitHub Models API for AI Assistant
   // Get your token from: https://github.com/settings/tokens
   // No specific scopes required for GitHub Models
-  githubToken: 'REMOVED_SECRET',
+  githubToken: '', // Set your token here locally (not committed to git)
   githubModel: 'gpt-4o',
   githubUrl: 'https://models.inference.ai.azure.com/chat/completions',
   

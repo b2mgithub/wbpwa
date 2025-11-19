@@ -1,0 +1,30 @@
+<kendo-grid
+    [data]="data"
+    [pageSize]="gridState.take"
+    [skip]="gridState.skip"
+    [sort]="gridState.sort"
+    [filter]="gridState.filter"
+    [group]="gridState.group"
+    [groupable]="false"
+    [filterable]="false"
+    [sortable]="true"
+    [pageable]="true"
+    [scrollable]="'scrollable'"
+    [height]="800"
+    (edit)="edit.emit($event)" 
+    (dataStateChange)="dataStateChange.emit($event)"
+>
+    <kendo-grid-column field="Type" title="Type"></kendo-grid-column>
+    <kendo-grid-column field="SubType" title="Sub Type"></kendo-grid-column>
+    <kendo-grid-column field="Rate" title="Rate">
+      <ng-template kendoGridCellTemplate let-dataItem>
+        {{dataItem.Rate | currency }}
+    </ng-template>
+    </kendo-grid-column>    
+    <kendo-grid-command-column  width="120">
+      <ng-template kendoGridCellTemplate>
+          <button [icon]="'edit'" kendoGridEditCommand [primary]="true"></button>
+      </ng-template>
+  </kendo-grid-command-column>
+</kendo-grid>
+

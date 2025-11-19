@@ -42,6 +42,24 @@ export class EntityAdapter<T extends DataServiceEntity> implements DataService<T
     await devilsOfflineDB.init();
   }
 
+  /**
+   * Map entity from IDB to DataService format (entity-specific ID → generic 'id')
+   * @param entity - Entity from IDB with entity-specific ID field
+   * @returns Entity with generic 'id' field set
+   */
+  protected mapToDataService(entity: T): T {
+    return { ...entity, id: String(entity[this.idField]) };
+  }
+
+  /**
+   * Map entity from DataService to IDB format (generic 'id' → entity-specific ID)
+   * @param entity - Entity with generic 'id' field
+   * @returns Entity with entity-specific ID field set
+   */
+  protected mapFromDataService(entity: T): T {
+    return { ...entity, [this.idField]: entity.id } as T;
+  }
+
   // ===================================================================
   // DataService Interface Implementation (for withDataService())
   // ===================================================================
@@ -52,7 +70,8 @@ export class EntityAdapter<T extends DataServiceEntity> implements DataService<T
    * @returns Promise of all entities
    */
   async load(_filter: EmptyFilter): Promise<T[]> {
-    return await this.readAll();
+    const entities = await this.readAll();
+    return entities.map(e => this.mapToDataService(e));
   }
 
   /**
@@ -66,7 +85,7 @@ export class EntityAdapter<T extends DataServiceEntity> implements DataService<T
     if (!result) {
       throw new Error(`Entity not found in ${this.storeName}: ${id}`);
     }
-    return result;
+    return this.mapToDataService(result);
   }
 
   /**
@@ -75,8 +94,9 @@ export class EntityAdapter<T extends DataServiceEntity> implements DataService<T
    * @returns Promise of created entity
    */
   async create(entity: T): Promise<T> {
-    await this.persist(entity);
-    return entity;
+    const mapped = this.mapFromDataService(entity);
+    await this.persist(mapped);
+    return this.mapToDataService(mapped);
   }
 
   /**
@@ -85,8 +105,9 @@ export class EntityAdapter<T extends DataServiceEntity> implements DataService<T
    * @returns Promise of updated entity
    */
   async update(entity: T): Promise<T> {
-    await this.persist(entity);
-    return entity;
+    const mapped = this.mapFromDataService(entity);
+    await this.persist(mapped);
+    return this.mapToDataService(mapped);
   }
 
   /**
@@ -95,8 +116,9 @@ export class EntityAdapter<T extends DataServiceEntity> implements DataService<T
    * @returns Promise of updated entities
    */
   async updateAll(entities: T[]): Promise<T[]> {
-    await this.persistMany(entities);
-    return entities;
+    const mapped = entities.map(e => this.mapFromDataService(e));
+    await this.persistMany(mapped);
+    return mapped.map(e => this.mapToDataService(e));
   }
 
   /**
@@ -105,7 +127,8 @@ export class EntityAdapter<T extends DataServiceEntity> implements DataService<T
    * @returns Promise<void>
    */
   async delete(entity: T): Promise<void> {
-    const id = entity[this.idField] as string;
+    // Robust ID extraction with string coercion
+    const id = String(entity.id ?? entity[this.idField]);
     await this.remove(id);
   }
 

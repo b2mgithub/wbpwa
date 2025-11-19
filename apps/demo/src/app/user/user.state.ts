@@ -1,4 +1,4 @@
-import { computed, inject } from '@angular/core';
+import { computed, inject, Injectable } from '@angular/core';
 
 import { withDevtools } from '@angular-architects/ngrx-toolkit';
 import { signalStore, type, withComputed, withHooks, withMethods } from '@ngrx/signals';
@@ -6,9 +6,16 @@ import { withEntities } from '@ngrx/signals/entities';
 
 import { withOfflineSync } from '@devils-offline/offline-sync';
 import { withGridState, withOfflineDataService } from '@devils-offline/store';
+import { EntityAdapter } from '@devils-offline/idb';
 
 import { User } from './user.model';
-import { IDBUsersAdapter } from './user.adapter';
+
+@Injectable({ providedIn: 'root' })
+export class IDBUsersAdapter extends EntityAdapter<User> {
+  constructor() {
+    super({ storeName: 'users', idField: 'UserId' });
+  }
+}
 
 export const UsersStore = signalStore(
   { providedIn: 'root' },
