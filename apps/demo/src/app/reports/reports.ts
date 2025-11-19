@@ -4,8 +4,8 @@ import { ReportComponent } from './report.component';
 import { ProductionsStore } from '../productions/productions.state';
 import { Production } from '../productions/productions.model';
 import { Block } from '../blocks/blocks.model';
-// TODO: Replace with a real blocks signal/store if available
-import { blocksData } from '../blocks/blocks.data';
+import { BlocksStore } from '../blocks/blocks.state';
+import { RatesStore } from '../rates/rates.state';
 
 @Component({
   selector: 'app-reports',
@@ -16,13 +16,22 @@ import { blocksData } from '../blocks/blocks.data';
 })
 export class Reports {
   private productionsStore = inject(ProductionsStore);
-  // Use the real signal from the store
+  private blocksStore = inject(BlocksStore);
+  private ratesStore = inject(RatesStore);
   productions = this.productionsStore.productions;
-  // For blocks, use static data for now
-  blocks = signal<Block[]>(blocksData as Block[]);
+  blocks = this.blocksStore.entities;
   userDivision = signal<string>('All');
-  pricing = signal<any>({});
   routeDate = signal<Date>(new Date());
+
+  // Compute pricing from rates: { Type: Rate }
+  // Maps equipment types (D7, 320, RockTruck, etc.) to their rates
+  pricing = computed(() => {
+    const rates = this.ratesStore.entities();
+    return rates.reduce((acc, rate) => {
+      acc[rate.Type] = rate.Rate;
+      return acc;
+    }, {} as Record<string, number>);
+  });
 
   reportBlocks = computed(() => {
     const date = this.routeDate();
@@ -57,6 +66,15 @@ export class Reports {
         .sort((a, b) => a.Block.localeCompare(b.Block))
     }));
   });
+
+  // Variance color helpers (replacing old pipes with modern approach)
+  getVarianceHighlightColor(variance: number): string {
+    return Math.abs(variance) > 0 ? (variance > 0 ? 'green' : 'red') : 'black';
+  }
+
+  getVarianceLowlightColor(variance: number): string {
+    return Math.abs(variance) > 0 ? (variance > 0 ? 'red' : 'green') : 'black';
+  }
 }
 
 function isInDateRange(date: Date, start: Date, end: Date) {
@@ -75,45 +93,45 @@ function blockAggregateReport(block: any, productions: any[], date: Date, pricin
     Graveling: { AccumulatedCost: 0, GPercent: 0 },
     RoadConstruction: { AccumulatedCost: 0, RPercent: 0 },
   };
-  const blockAggregates = productions.filter(production => (production.UBlockId === block.UBlockId))
+  const blockAggregates = productions.filter(production => (production.BlockId === block.BlockId))
     .sort(sortByDate)
     .reduce((aggregates, production) => {
       return {
         Harvesting: {
-          BunchingH: aggregates.Harvesting.BunchingH + (production.Harvesting?.HBunchingH || 0),
-          BunchingP: production.Harvesting?.HBunchingP ? production.Harvesting.HBunchingP : aggregates.Harvesting.BunchingP,
-          SkiddingH: aggregates.Harvesting.SkiddingH + (production.Harvesting?.HSkiddingH || 0),
-          SkiddingP: production.Harvesting?.HSkiddingP ? production.Harvesting.HSkiddingP : aggregates.Harvesting.SkiddingP,
-          DeckingH: aggregates.Harvesting.DeckingH + (production.Harvesting?.HDeckingH || 0),
-          DeckingP: production.Harvesting?.HDeckingP ? production.Harvesting.HDeckingP : aggregates.Harvesting.DeckingP,
-          ProcessingH: aggregates.Harvesting.ProcessingH + (production.Harvesting?.HProcessingH || 0),
-          ProcessingP: production.Harvesting?.HProcessingP ? production.Harvesting.HProcessingP : aggregates.Harvesting.ProcessingP,
-          LoadingH: aggregates.Harvesting.LoadingH + (production.Harvesting?.HLoadingH || 0),
-          LoadingP: production.Harvesting?.HLoadingP ? production.Harvesting.HLoadingP : aggregates.Harvesting.LoadingP,
+          BunchingH: aggregates.Harvesting.BunchingH + (production.HBunchingH || 0),
+          BunchingP: production.HBunchingP ? production.HBunchingP : aggregates.Harvesting.BunchingP,
+          SkiddingH: aggregates.Harvesting.SkiddingH + (production.HSkiddingH || 0),
+          SkiddingP: production.HSkiddingP ? production.HSkiddingP : aggregates.Harvesting.SkiddingP,
+          DeckingH: aggregates.Harvesting.DeckingH + (production.HDeckingH || 0),
+          DeckingP: production.HDeckingP ? production.HDeckingP : aggregates.Harvesting.DeckingP,
+          ProcessingH: aggregates.Harvesting.ProcessingH + (production.HProcessingH || 0),
+          ProcessingP: production.HProcessingP ? production.HProcessingP : aggregates.Harvesting.ProcessingP,
+          LoadingH: aggregates.Harvesting.LoadingH + (production.HLoadingH || 0),
+          LoadingP: production.HLoadingP ? production.HLoadingP : aggregates.Harvesting.LoadingP,
         },
         Graveling: {
           AccumulatedCost: aggregates.Graveling.AccumulatedCost
-            + (pricing[production.Graveling?.GCat1Type] || 0) * (production.Graveling?.GCat1 || 0)
-            + (pricing[production.Graveling?.GCat2Type] || 0) * (production.Graveling?.GCat2 || 0)
-            + (pricing[production.Graveling?.GHoe1Type] || 0) * (production.Graveling?.GHoe1 || 0)
-            + (pricing[production.Graveling?.GHoe2Type] || 0) * (production.Graveling?.GHoe2 || 0)
-            + (pricing['RockTruck'] || 0) * (production.Graveling?.GRockTruck || 0)
-            + (pricing['Grader'] || 0) * (production.Graveling?.GGrader || 0)
-            + (pricing['Packer'] || 0) * (production.Graveling?.GPacker || 0)
-            + (pricing['Labour'] || 0) * (production.Graveling?.GLabour || 0),
-          GPercent: production.Graveling?.GPercent ? production.Graveling.GPercent : aggregates.Graveling.GPercent
+            + (pricing[production.GCat1Type] || 0) * (production.GCat1 || 0)
+            + (pricing[production.GCat2Type] || 0) * (production.GCat2 || 0)
+            + (pricing[production.GHoe1Type] || 0) * (production.GHoe1 || 0)
+            + (pricing[production.GHoe2Type] || 0) * (production.GHoe2 || 0)
+            + (pricing['RockTruck'] || 0) * (production.GRockTruck || 0)
+            + (pricing['Grader'] || 0) * (production.GGrader || 0)
+            + (pricing['Packer'] || 0) * (production.GPacker || 0)
+            + (pricing['Labour'] || 0) * (production.GLabour || 0),
+          GPercent: production.GPercent ? production.GPercent : aggregates.Graveling.GPercent
         },
         RoadConstruction: {
           AccumulatedCost: aggregates.RoadConstruction.AccumulatedCost
-            + (pricing[production.RoadConstruction?.RCat1Type] || 0) * (production.RoadConstruction?.RCat1 || 0)
-            + (pricing[production.RoadConstruction?.RCat2Type] || 0) * (production.RoadConstruction?.RCat2 || 0)
-            + (pricing[production.RoadConstruction?.RHoe1Type] || 0) * (production.RoadConstruction?.RHoe1 || 0)
-            + (pricing[production.RoadConstruction?.RHoe2Type] || 0) * (production.RoadConstruction?.RHoe2 || 0)
-            + (pricing['RockTruck'] || 0) * (production.RoadConstruction?.RRockTruck || 0)
-            + (pricing['Grader'] || 0) * (production.RoadConstruction?.RGrader || 0)
-            + (pricing['Packer'] || 0) * (production.RoadConstruction?.RPacker || 0)
-            + (pricing['Labour'] || 0) * (production.RoadConstruction?.RLabour || 0),
-          RPercent: production.RoadConstruction?.RPercent ? production.RoadConstruction.RPercent : aggregates.RoadConstruction.RPercent
+            + (pricing[production.RCat1Type] || 0) * (production.RCat1 || 0)
+            + (pricing[production.RCat2Type] || 0) * (production.RCat2 || 0)
+            + (pricing[production.RHoe1Type] || 0) * (production.RHoe1 || 0)
+            + (pricing[production.RHoe2Type] || 0) * (production.RHoe2 || 0)
+            + (pricing['RockTruck'] || 0) * (production.RRockTruck || 0)
+            + (pricing['Grader'] || 0) * (production.RGrader || 0)
+            + (pricing['Packer'] || 0) * (production.RPacker || 0)
+            + (pricing['Labour'] || 0) * (production.RLabour || 0),
+          RPercent: production.RPercent ? production.RPercent : aggregates.RoadConstruction.RPercent
         }
       };
     }, aggregatesZeroValues);

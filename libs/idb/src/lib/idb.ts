@@ -24,7 +24,7 @@ export interface StateRecord {
 
 export interface FailedRequest {
   id: string;               // GUID
-  method: 'POST' | 'PATCH' | 'DELETE';
+  method: 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   url: string;              // Full API endpoint
   body: unknown;            // Request payload
   timestamp: number;        // When it failed
@@ -113,9 +113,13 @@ export class DevilsOfflineDB {
   public async persistState<T = unknown>(key: string, state: T): Promise<void> {
     await this.init();
     if (!this.db) return;
-    const tx = this.db.transaction(STATES_STORE, 'readwrite');
-    tx.store.put({ key, ...state } as StateRecord);
-    await tx.done;
+    try {
+      const tx = this.db.transaction(STATES_STORE, 'readwrite');
+      tx.store.put({ key, ...state } as StateRecord);
+      await tx.done;
+    } catch (err) {
+      console.warn('Failed to persist state:', key, err);
+    }
   }
 
   public async removeState(key: string): Promise<void> {

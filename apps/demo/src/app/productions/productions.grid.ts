@@ -42,9 +42,10 @@ import { ProductionsStore } from './productions.state';
     <button kendoButton [svgIcon]="createIcon" (click)="createProduction()" aria-label="Add"></button>
   </ng-template>
 
-  <!-- Data Columns - showing key fields from Production -->
+  <!-- Data Columns -->
   <kendo-grid-column field="ProductionId" title="ID" [width]="80"></kendo-grid-column>
   <kendo-grid-column field="BlockId" title="Block" [width]="100"></kendo-grid-column>
+  <kendo-grid-column field="UserId" title="User" [width]="100"></kendo-grid-column>
   <kendo-grid-column field="Date" title="Date" [width]="120">
     <ng-template kendoGridCellTemplate let-dataItem>
       {{ formatDate(dataItem.Date) }}

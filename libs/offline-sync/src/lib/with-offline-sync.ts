@@ -86,15 +86,15 @@ export function withOfflineSync<T>(config: WithOfflineSyncConfig<T>) {
 
         async updateToServer(entityId: string, dirtyFields: Partial<T>) {
           try {
-            await firstValueFrom(http.patch(`${apiUrl}/${entityId}`, dirtyFields));
-            console.log(`✅ Updated ${entityName} on server:`, entityId, dirtyFields);
+            await firstValueFrom(http.put(`${apiUrl}/${entityId}`, dirtyFields));
+            console.log(`✅ Updated ${entityName} on server:`, entityId, JSON.stringify(dirtyFields));
           } catch (err) {
-            console.error(`❌ Failed to update ${entityName} on server:`, entityId, dirtyFields, err);
+            console.error(`❌ Failed to update ${entityName} on server:`, entityId, JSON.stringify(dirtyFields), err);
             
             // Save failed request to IDB
             const failedRequest: FailedRequest = {
               id: generateGuid(),
-              method: 'PATCH',
+              method: 'PUT',
               url: `${apiUrl}/${entityId}`,
               body: dirtyFields,
               timestamp: Date.now(),
@@ -145,6 +145,8 @@ export function withOfflineSync<T>(config: WithOfflineSyncConfig<T>) {
               // Retry the request based on method
               if (request.method === 'POST') {
                 await firstValueFrom(http.post(request.url, request.body));
+              } else if (request.method === 'PUT') {
+                await firstValueFrom(http.put(request.url, request.body));
               } else if (request.method === 'PATCH') {
                 await firstValueFrom(http.patch(request.url, request.body));
               } else if (request.method === 'DELETE') {

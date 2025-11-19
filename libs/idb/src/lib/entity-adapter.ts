@@ -132,38 +132,54 @@ export class EntityAdapter<T extends DataServiceEntity> implements DataService<T
     await this.init();
     const db = devilsOfflineDB.getDB();
     if (!db) return;
-    const tx = db.transaction(this.storeName, 'readwrite');
-    tx.store.put(entity);
-    await tx.done;
+    try {
+      const tx = db.transaction(this.storeName, 'readwrite');
+      tx.store.put(entity);
+      await tx.done;
+    } catch (err) {
+      console.warn(`Failed to persist entity in ${this.storeName}:`, err);
+    }
   }
 
   public async persistMany(entities: T[]): Promise<void> {
     await this.init();
     const db = devilsOfflineDB.getDB();
     if (!db) return;
-    const tx = db.transaction(this.storeName, 'readwrite');
-    for (const entity of entities) {
-      tx.store.put(entity);
+    try {
+      const tx = db.transaction(this.storeName, 'readwrite');
+      for (const entity of entities) {
+        tx.store.put(entity);
+      }
+      await tx.done;
+    } catch (err) {
+      console.warn(`Failed to persist entities in ${this.storeName}:`, err);
     }
-    await tx.done;
   }
 
   public async remove(id: string): Promise<void> {
     await this.init();
     const db = devilsOfflineDB.getDB();
     if (!db) return;
-    const tx = db.transaction(this.storeName, 'readwrite');
-    tx.store.delete(id);
-    await tx.done;
+    try {
+      const tx = db.transaction(this.storeName, 'readwrite');
+      tx.store.delete(id);
+      await tx.done;
+    } catch (err) {
+      console.warn(`Failed to remove entity from ${this.storeName}:`, err);
+    }
   }
 
   public async removeAll(): Promise<void> {
     await this.init();
     const db = devilsOfflineDB.getDB();
     if (!db) return;
-    const tx = db.transaction(this.storeName, 'readwrite');
-    tx.store.clear();
-    await tx.done;
+    try {
+      const tx = db.transaction(this.storeName, 'readwrite');
+      tx.store.clear();
+      await tx.done;
+    } catch (err) {
+      console.warn(`Failed to remove all entities from ${this.storeName}:`, err);
+    }
   }
 
   public async count(): Promise<number> {

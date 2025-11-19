@@ -1,10 +1,10 @@
-import { Component, OnInit, inject } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, inject, OnInit } from '@angular/core';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { KENDO_BUTTONS } from '@progress/kendo-angular-buttons';
-import { KENDO_INPUTS } from '@progress/kendo-angular-inputs';
-import { KENDO_LABEL } from '@progress/kendo-angular-label';
+import { KENDO_INPUTS, FormFieldModule } from '@progress/kendo-angular-inputs';
+import { FloatingLabelModule, KENDO_LABEL } from '@progress/kendo-angular-label';
 
 import { generateGuid } from '@devils-offline/guid';
 
@@ -13,39 +13,61 @@ import { ProductsStore } from './products.state';
 
 @Component({
   selector: 'app-products-form',
-  imports: [KENDO_BUTTONS, KENDO_INPUTS, KENDO_LABEL, ReactiveFormsModule],
+  imports: [
+    ReactiveFormsModule,
+    KENDO_BUTTONS,
+    KENDO_INPUTS,
+    KENDO_LABEL,
+    FloatingLabelModule,
+    FormFieldModule
+  ],
   template: `
-    <div class="product-detail-container">
+    <div class="outline-form">
       <h2>{{ isCreateMode ? 'Create Product' : 'Update Product' }}</h2>
-      
-      <form [formGroup]="formGroup" (ngSubmit)="save()">
-        <kendo-formfield>
-          <kendo-label text="Product Name"></kendo-label>
-          <kendo-textbox formControlName="ProductName" [required]="true"></kendo-textbox>
-        </kendo-formfield>
-
-        <kendo-formfield>
-          <kendo-label text="Unit Price"></kendo-label>
-          <kendo-numerictextbox formControlName="UnitPrice" [min]="0" [decimals]="2" [format]="'c'"></kendo-numerictextbox>
-        </kendo-formfield>
-
-        <kendo-formfield>
-          <kendo-label text="Units In Stock"></kendo-label>
-          <kendo-numerictextbox formControlName="UnitsInStock" [min]="0" [decimals]="0"></kendo-numerictextbox>
-        </kendo-formfield>
-
-        <kendo-formfield>
-          <kendo-label text="Category"></kendo-label>
-          <kendo-textbox formControlName="Category" [required]="true"></kendo-textbox>
-        </kendo-formfield>
-
-        <kendo-formfield>
-          <kendo-label text="Discontinued"></kendo-label>
-          <input type="checkbox" formControlName="Discontinued" kendoCheckBox />
-        </kendo-formfield>
-
+      <form [formGroup]="form" (ngSubmit)="save()" autocomplete="off">
+        <div class="outline-div">
+          <kendo-formfield>
+            <kendo-floatinglabel class="outline" text="Product Name">
+              <kendo-textbox
+                formControlName="productName"
+                fillMode="outline"
+                required
+              ></kendo-textbox>
+            </kendo-floatinglabel>
+          </kendo-formfield>
+          <kendo-formfield>
+            <kendo-floatinglabel class="outline" text="Category">
+              <kendo-textbox
+                formControlName="category"
+                fillMode="outline"
+                required
+              ></kendo-textbox>
+            </kendo-floatinglabel>
+          </kendo-formfield>
+          <kendo-formfield>
+            <kendo-floatinglabel class="outline" text="Unit Price">
+              <kendo-numerictextbox
+                formControlName="unitPrice"
+                fillMode="outline"
+                [min]="0"
+                [decimals]="2"
+                [format]="'c'"
+              ></kendo-numerictextbox>
+            </kendo-floatinglabel>
+          </kendo-formfield>
+          <kendo-formfield>
+            <kendo-floatinglabel class="outline" text="Units In Stock">
+              <kendo-numerictextbox
+                formControlName="unitsInStock"
+                fillMode="outline"
+                [min]="0"
+                [decimals]="0"
+              ></kendo-numerictextbox>
+            </kendo-floatinglabel>
+          </kendo-formfield>
+        </div>
         <div class="button-group">
-          <button kendoButton [themeColor]="'primary'" [disabled]="formGroup.invalid" type="submit">
+          <button kendoButton themeColor="primary" type="submit">
             Save
           </button>
           <button kendoButton type="button" (click)="cancel()">
@@ -54,160 +76,89 @@ import { ProductsStore } from './products.state';
         </div>
       </form>
     </div>
-  `,
-  styles: [`
-    .product-detail-container {
-      max-width: 600px;
-      margin: 20px auto;
-      padding: 20px;
-    }
-
-    h2 {
-      margin-bottom: 20px;
-    }
-
-    kendo-formfield {
-      display: block;
-      margin-bottom: 15px;
-    }
-
-    .button-group {
-      display: flex;
-      gap: 10px;
-      margin-top: 20px;
-    }
-  `],
+  `
 })
 export class ProductsForm implements OnInit {
-  private formBuilder = inject(FormBuilder);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   public store = inject(ProductsStore);
 
-  public formGroup: FormGroup;
-  public isCreateMode = false;
-  private productId: string | null = null;
+  productId: string | null = null;
+  isCreateMode = true;
 
-  constructor() {
-    this.formGroup = this.formBuilder.group({
-      ProductId: [''],
-      ProductName: ['', Validators.required],
-      UnitPrice: [0],
-      UnitsInStock: [0],
-      Discontinued: [false],
-      Category: ['', Validators.required],
-    });
-  }
+  form = new FormGroup({
+    productName: new FormControl('', { nonNullable: true }),
+    category: new FormControl('', { nonNullable: true }),
+    unitPrice: new FormControl(0, { nonNullable: true }),
+    unitsInStock: new FormControl(0, { nonNullable: true })
+  });
 
   ngOnInit(): void {
-    // Check URL segments: /products/new or /products/:id
-    const segments = this.route.snapshot.url;
-    const lastSegment = segments[segments.length - 1]?.path;
-    
-    if (lastSegment === 'new') {
-      this.isCreateMode = true;
-      // Form already has default values
-    } else {
+    const id = this.route.snapshot.paramMap.get('id');
+
+    if (id && id !== 'new') {
       this.isCreateMode = false;
-      const id = this.route.snapshot.paramMap.get('id');
       this.productId = id;
-      
-      // Find product in store (using bracket notation for withDataService-generated property)
       const product = this.store['entities']().find((p: Product) => p.ProductId === id);
-      
+
       if (product) {
-        this.formGroup.patchValue(product);
+        this.form.patchValue({
+          productName: product.ProductName,
+          category: product.Category,
+          unitPrice: product.UnitPrice,
+          unitsInStock: product.UnitsInStock
+        });
+        this.form.markAsPristine();
       } else {
-        console.warn('Product not found:', id);
-        // Navigate back to grid if product doesn't exist
         this.router.navigate(['/products']);
       }
     }
   }
 
   async save(): Promise<void> {
-    if (this.formGroup.invalid) {
+    const formValue = this.form.getRawValue();
+
+    if (!formValue.productName || !formValue.category) {
+      console.warn('Product Name and Category are required');
       return;
     }
 
-    const formData = this.formGroup.value;
+    const now = new Date().toISOString();
 
-    try {
-      if (this.isCreateMode) {
-        // Generate ProductId for new product
-        const productId = generateGuid();
-        
-        // Merge form data with defaults to handle partial input
-        const defaults = createBlankProduct();
-        const newProduct: Product = {
-          ...defaults,
-          ...formData,
-          ProductId: productId,
-          id: productId, // DataService requires 'id' field
-        };
-        
-        console.log('Creating new product:', newProduct);
-        
-        // Create new product using withDataService-generated method
-        await this.store['create'](newProduct);
-        
-        // Sync to server (fire-and-forget with retry on failure)
-        this.store['createToServer'](newProduct); // Don't await - fire and forget
-      } else {
-        // Update existing product - merge form data with existing product to preserve all fields
-        const existingProduct = this.store['entities']().find((p: Product) => p.ProductId === formData.ProductId);
-        
-        if (!existingProduct) {
-          console.error('Cannot update - product not found:', formData.ProductId);
-          return;
-        }
-        
-        const updatedProduct: Product = {
-          ...existingProduct,
-          ...formData,
-          id: formData.ProductId, // Ensure id field is set
-        };
-        
-        console.log('Updating product:', updatedProduct);
-        
-        await this.store['update'](updatedProduct);
-        
-        // Update dirty fields on server (only changed fields)
-        const dirtyFields = this.collectDirtyFields();
-        this.store['updateToServer'](formData.ProductId, dirtyFields); // Don't await - fire and forget
+    if (this.isCreateMode) {
+      const newId = generateGuid();
+      const newProduct: Product = {
+        id: newId,
+        ProductId: newId,
+        ProductName: formValue.productName,
+        Category: formValue.category,
+        UnitPrice: formValue.unitPrice,
+        UnitsInStock: formValue.unitsInStock,
+        Discontinued: false
+      };
+      await this.store['create'](newProduct);
+      this.store['createToServer'](newProduct);
+    } else if (this.productId) {
+      const existingProduct = this.store['entities']().find((p: Product) => p.ProductId === this.productId);
+      if (!existingProduct) {
+        return;
       }
-    } catch (error) {
-      console.error('Error saving product:', error);
-    } finally {
-      // Always navigate back to grid, regardless of success/failure
-      this.router.navigate(['/products']);
+
+      const updatedProduct: Product = {
+        ...existingProduct,
+        ProductName: formValue.productName,
+        Category: formValue.category,
+        UnitPrice: formValue.unitPrice,
+        UnitsInStock: formValue.unitsInStock
+      };
+      await this.store['update'](updatedProduct);
+      this.store['updateToServer'](this.productId, updatedProduct);
     }
+
+    this.router.navigate(['/products']);
   }
 
   cancel(): void {
     this.router.navigate(['/products']);
-  }
-
-  private collectDirtyFields(): Partial<Product> {
-    const dirty: Record<string, unknown> = {};
-    const formValue = this.formGroup.value;
-
-    // Always include ID fields (fields ending in 'Id' that look like GUIDs)
-    Object.keys(formValue).forEach(key => {
-      const value = formValue[key];
-      if (key.endsWith('Id') && typeof value === 'string' && value.length > 0) {
-        dirty[key] = value;
-      }
-    });
-
-    // Include dirty fields
-    Object.keys(this.formGroup.controls).forEach(key => {
-      const control = this.formGroup.get(key);
-      if (control?.dirty) {
-        dirty[key] = formValue[key];
-      }
-    });
-
-    return dirty as Partial<Product>;
   }
 }

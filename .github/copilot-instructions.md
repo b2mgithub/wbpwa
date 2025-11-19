@@ -90,3 +90,7 @@ the form is to be two column outline (with the floating labels)
 there should not be any styles in the component - full stop.
 and the form needs to be converted to the new signalform style
 
+we are now fully committed to using the cutting edge signal forms from angular architects ngrx toolkit. 
+
+and i created a whole guide for you to read here: copilot_forms_guide.md
+

@@ -427,7 +427,8 @@ export class ProductionsForm implements OnInit {
         ProductionId: newId,
       };
       console.log('✨ [API PAYLOAD] Creating production:', JSON.stringify(newProduction, null, 2));
-      await this.store.setProductions([...this.store.entities(), newProduction]);
+      await this.store['create'](newProduction);
+      this.store['createToServer'](newProduction);
     } else {
       if (!this.productionId) {
         console.warn('No productionId for update');
@@ -439,7 +440,8 @@ export class ProductionsForm implements OnInit {
         ProductionId: this.productionId,
       };
       console.log('🔄 [API PAYLOAD] Updating production:', JSON.stringify(updatedProduction, null, 2));
-      await this.store.bulkUpdate([updatedProduction]);
+      await this.store['update'](updatedProduction);
+      this.store['updateToServer'](this.productionId, updatedProduction);
     }
 
     this.router.navigate(['/productions']);

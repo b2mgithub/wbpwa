@@ -10,4 +10,6 @@ import { CommonModule, DecimalPipe, PercentPipe, CurrencyPipe } from '@angular/c
 })
 export class ReportComponent {
   @Input() list: any;
+  @Input() getVarianceHighlightColor!: (variance: number) => string;
+  @Input() getVarianceLowlightColor!: (variance: number) => string;
 }

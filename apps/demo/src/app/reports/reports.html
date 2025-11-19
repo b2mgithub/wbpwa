@@ -1,1 +1,5 @@
-<app-report-component [list]="report()"></app-report-component>
+<app-report-component 
+  [list]="report()" 
+  [getVarianceHighlightColor]="getVarianceHighlightColor.bind(this)"
+  [getVarianceLowlightColor]="getVarianceLowlightColor.bind(this)">
+</app-report-component>

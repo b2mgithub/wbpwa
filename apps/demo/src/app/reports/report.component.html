@@ -27,7 +27,9 @@
           <td style="text-align: center; width: 12%">{{ harvest.HP | percent:'1.2-2' }}</td>
           <td style="text-align: center; width: 12%">{{ harvest.PMax | percent:'1.2-2' }}</td>
           <td style="text-align: center; width: 12%">{{ (harvest.HVol || 0) | number }}</td>
-          <td style="text-align: center; width: 28%">{{ harvest.HVar | number:'1.2-2' }} ({{ harvest.PVar | percent:'1.2-2' }})</td>
+          <td style="text-align: center; width: 28%" [style.color]="getVarianceHighlightColor(harvest.HVar)">
+            {{ harvest.HVar | number:'1.2-2' }} ({{ harvest.PVar | percent:'1.2-2' }})
+          </td>
         </tr>
         <tr>
           <td colspan="7" style="text-align: center; background-color: gainsboro;"><b>Road Construction</b></td>
@@ -48,7 +50,9 @@
           <td style="text-align: center;">{{ block.RoadConstruction.CompleteP | percent:'1.2-2' }}</td>
           <td style="text-align: center;">{{ (block.RoadConstruction.CostPerKm || 0)  | currency }}</td>
           <td style="text-align: center;">{{ (block.RoadConstruction.TargetPerKm || 0) | currency }}</td>
-          <td style="text-align: center;">{{ (block.RoadConstruction.Var || 0) | currency }} ({{ (block.RoadConstruction.PVar || 0) | percent:'1.2-2' }})</td>
+          <td style="text-align: center;" [style.color]="getVarianceLowlightColor(block.RoadConstruction.Var || 0)">
+            {{ (block.RoadConstruction.Var || 0) | currency }} ({{ (block.RoadConstruction.PVar || 0) | percent:'1.2-2' }})
+          </td>
         </tr>
         <tr>
           <td colspan="7" style="text-align: center; background-color: gainsboro;"><b>Gravelling</b></td>
@@ -69,7 +73,9 @@
           <td style="text-align: center;">{{ block.Graveling.CompleteP | percent:'1.2-2' }}</td>
           <td style="text-align: center;">{{ (block.Graveling.CostPerKm || 0) | currency }}</td>
           <td style="text-align: center;">{{ (block.Graveling.TargetPerKm || 0) | currency }}</td>
-          <td style="text-align: center;">{{ (block.Graveling.Var || 0) | currency}} ({{ (block.Graveling.PVar || 0) | percent:'1.2-2' }})</td>
+          <td style="text-align: center;" [style.color]="getVarianceLowlightColor(block.Graveling.Var || 0)">
+            {{ (block.Graveling.Var || 0) | currency}} ({{ (block.Graveling.PVar || 0) | percent:'1.2-2' }})
+          </td>
         </tr>
       </table>
     </td>

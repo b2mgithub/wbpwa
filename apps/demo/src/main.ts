@@ -4,20 +4,6 @@ import { App } from './app/app';
 import { Workbox } from 'workbox-window';
 import { environment } from './environments/environment';
 
-// Initialize authUser in localStorage on first load
-function initializeAuthUser() {
-  const storedAuthUser = localStorage.getItem('authUser');
-  
-  if (!storedAuthUser) {
-    console.log('🔐 Initializing authUser from environment');
-    localStorage.setItem('authUser', JSON.stringify(environment.authUser));
-  } else {
-    console.log('🔐 AuthUser already exists in localStorage');
-  }
-}
-
-// Initialize auth user before bootstrapping
-initializeAuthUser();
 
 bootstrapApplication(App, appConfig)
   .then(() => {

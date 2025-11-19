@@ -1,23 +1,40 @@
 import { Route } from '@angular/router';
 
-import { Blocks } from './blocks/blocks';
-import { Reports } from './reports/reports';
-import { ProductsForm } from './products/products.form';
-import { ProductsGrid } from './products/products.grid';
+import { BlocksForm } from './blocks/blocks.form';
+import { BlocksGrid } from './blocks/blocks.grid';
 import { ProductionsForm } from './productions/productions.form';
 import { ProductionsGrid } from './productions/productions.grid';
+import { ProductsForm } from './products/products.form';
+import { ProductsGrid } from './products/products.grid';
 import { RatesForm } from './rates/rates.form';
 import { RatesGrid } from './rates/rates.grid';
+import { Reports } from './reports/reports';
+import { SmartGridComponent } from './smart-grid/smart-grid.component';
+import { TestKeyboardComponent } from './test-keyboard/test-keyboard.component';
 import { TestRequestComponent } from './test-request/test-request.component';
 import { TestSwComponent } from './test-sw/test-sw.component';
-import { TestKeyboardComponent } from './test-keyboard/test-keyboard.component';
+
+import { LoginComponent } from '@devils-offline/auth/feature-login';
+import { authGuard, adminGuard } from '@devils-offline/auth/util-guards';
+import { UsersGrid } from './user/user.grid';
+import { UsersForm } from './user/user.form';
 
 export const appRoutes: Route[] = [
+  { path: 'login', component: LoginComponent },
   { path: '', redirectTo: '/productions', pathMatch: 'full' },
-  { path: 'blocks', component: Blocks },
-  { path: 'reports', component: Reports },
+  { 
+    path: 'blocks', 
+    canActivate: [authGuard],
+    children: [
+      { path: '', component: BlocksGrid },
+      { path: 'new', component: BlocksForm },
+      { path: ':id', component: BlocksForm },
+    ]
+  },
+  { path: 'reports', component: Reports, canActivate: [authGuard] },
   { 
     path: 'products', 
+    canActivate: [authGuard],
     children: [
       { path: '', component: ProductsGrid },
       { path: 'new', component: ProductsForm },
@@ -26,6 +43,7 @@ export const appRoutes: Route[] = [
   },
   { 
     path: 'productions', 
+    canActivate: [authGuard],
     children: [
       { path: '', component: ProductionsGrid },
       { path: 'new', component: ProductionsForm },
@@ -34,13 +52,24 @@ export const appRoutes: Route[] = [
   },
   { 
     path: 'rates', 
+    canActivate: [adminGuard],
     children: [
       { path: '', component: RatesGrid },
       { path: 'new', component: RatesForm },
       { path: ':id', component: RatesForm },
     ]
   },
-  { path: 'test-request', component: TestRequestComponent },
-  { path: 'test-sw', component: TestSwComponent },
-  { path: 'test-keyboard', component: TestKeyboardComponent },
+  { 
+    path: 'user', 
+    canActivate: [adminGuard],
+    children: [
+      { path: '', component: UsersGrid },
+      { path: 'new', component: UsersForm },
+      { path: ':id', component: UsersForm },
+    ]
+  },
+  { path: 'test-request', component: TestRequestComponent, canActivate: [authGuard] },
+  { path: 'test-sw', component: TestSwComponent, canActivate: [authGuard] },
+  { path: 'test-keyboard', component: TestKeyboardComponent, canActivate: [authGuard] },
+  { path: 'smart-grid', component: SmartGridComponent, canActivate: [authGuard] },
 ];

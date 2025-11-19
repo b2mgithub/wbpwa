@@ -21,7 +21,19 @@
       "@devils-offline/idb": ["libs/idb/src/index.ts"],
       "@devils-offline/offline-sync": ["libs/offline-sync/src/index.ts"],
       "@devils-offline/store": ["libs/store/src/index.ts"],
-      "@devils-offline/keyboard": ["libs/keyboard/src/index.ts"]
+      "@devils-offline/keyboard": ["libs/keyboard/src/index.ts"],
+      "@devils-offline/auth/data-access": [
+        "libs/auth/data-access/src/index.ts"
+      ],
+      "@devils-offline/auth/feature-login": [
+        "libs/auth/feature-login/src/index.ts"
+      ],
+      "@devils-offline/auth/util-guards": [
+        "libs/auth/util-guards/src/index.ts"
+      ],
+      "@devils-offline/users/feature-grid": [
+        "libs/users/feature-grid/src/index.ts"
+      ]
     }
   },
   "exclude": ["node_modules", "tmp"]

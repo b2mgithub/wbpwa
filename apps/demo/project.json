@@ -124,6 +124,13 @@
         "tsConfig": "apps/demo/tsconfig.spec.json"
       }
     },
+    "serve-dist": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "http-server dist/apps/demo/browser -p 8080 -c-1 --gzip --proxy http://127.0.0.1:8080?",
+        "cwd": "."
+      }
+    },
     "serve-static": {
       "continuous": true,
       "executor": "@nx/web:file-server",

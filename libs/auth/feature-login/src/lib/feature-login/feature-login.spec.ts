@@ -1,17 +1,16 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { FeatureLogin } from './feature-login';
 
-import { Blocks } from './blocks';
-
-describe('Blocks', () => {
-  let component: Blocks;
-  let fixture: ComponentFixture<Blocks>;
+describe('FeatureLogin', () => {
+  let component: FeatureLogin;
+  let fixture: ComponentFixture<FeatureLogin>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [Blocks],
+      imports: [FeatureLogin],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(Blocks);
+    fixture = TestBed.createComponent(FeatureLogin);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

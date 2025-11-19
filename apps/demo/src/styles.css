@@ -126,6 +126,12 @@ body {
   width: 100% !important;
 }
 
+.button-group {
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+}
+
 .outline-form-buttons {
   margin-top: 20px;
   margin-left: 12px;
