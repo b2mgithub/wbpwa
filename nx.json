@@ -16,7 +16,6 @@
     ],
     "sharedGlobals": ["{workspaceRoot}/.github/workflows/ci.yml"]
   },
-
   "targetDefaults": {
     "@angular/build:application": {
       "cache": true,
@@ -35,15 +34,8 @@
     "@nx/jest:jest": {
       "cache": true,
       "inputs": ["default", "^production", "{workspaceRoot}/jest.preset.js"],
-      "options": {
-        "passWithNoTests": true
-      },
-      "configurations": {
-        "ci": {
-          "ci": true,
-          "codeCoverage": true
-        }
-      }
+      "options": { "passWithNoTests": true },
+      "configurations": { "ci": { "ci": true, "codeCoverage": true } }
     },
     "@nx/js:tsc": {
       "cache": true,
@@ -52,13 +44,7 @@
     }
   },
   "plugins": [
-    {
-      "plugin": "@nx/playwright/plugin",
-      "options": {
-        "targetName": "e2e"
-      }
-    }
-
+    { "plugin": "@nx/playwright/plugin", "options": { "targetName": "e2e" } }
   ],
   "generators": {
     "@nx/angular:application": {
@@ -67,12 +53,8 @@
       "style": "scss",
       "unitTestRunner": "jest"
     },
-    "@nx/angular:component": {
-      "style": "css"
-    },
-    "@nx/angular:library": {
-      "linter": "eslint",
-      "unitTestRunner": "jest"
-    }
-  }
+    "@nx/angular:component": { "style": "css" },
+    "@nx/angular:library": { "linter": "eslint", "unitTestRunner": "jest" }
+  },
+  "nxCloudId": "692a1dc6220dee94d4385830"
 }

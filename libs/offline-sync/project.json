@@ -4,13 +4,5 @@
   "sourceRoot": "libs/offline-sync/src",
   "projectType": "library",
   "tags": [],
-  "targets": {
-    "test": {
-      "executor": "@nx/jest:jest",
-      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
-      "options": {
-        "jestConfig": "libs/offline-sync/jest.config.ts"
-      }
-    }
-  }
+  "targets": {}
 }

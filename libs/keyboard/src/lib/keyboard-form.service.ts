@@ -1,17 +1,17 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { FormGroup, AbstractControl } from '@angular/forms';
 import { KeyboardConfig } from './keyboard.store';
 import { KeyboardUtilService } from './keyboard-util.service';
 
 @Injectable({ providedIn: 'root' })
 export class KeyboardFormService {
+  private readonly util = inject(KeyboardUtilService);
+
   form: FormGroup | null = null;
   keyboardOpen = false;
   keyboardConfig: KeyboardConfig = { type: 'numeric', title: '', initialValue: '' };
   currentField: string | null = null;
   firstKeyPress = false;
-
-  constructor(private util: KeyboardUtilService) {}
 
   /**
    * Resolve a control by dot notation path (e.g., 'Harvesting.HBunchingH')

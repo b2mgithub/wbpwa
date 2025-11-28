@@ -6,7 +6,7 @@ export class KeyboardUtilService {
   /**
    * Generate a numeric keyboard config
    */
-  getNumericConfig(field: string, title: string, value: string, allowDecimal: boolean = true): KeyboardConfig {
+  getNumericConfig(field: string, title: string, value: string, allowDecimal = true): KeyboardConfig {
     return {
       type: 'numeric',
       title,

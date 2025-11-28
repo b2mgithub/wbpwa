@@ -1,4 +1,4 @@
-import { Component, computed, effect, input, output, ViewChild, ElementRef, ViewEncapsulation, inject, Renderer2, Inject } from '@angular/core';
+import { Component, computed, effect, input, output, ViewChild, ElementRef, ViewEncapsulation, inject, Renderer2 } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -43,17 +43,16 @@ export class KeyboardComponent {
 
   // Modern signal-based outputs
   readonly valueChange = output<string>();
-  readonly close = output<void>();
+  readonly closeKeyboard = output<void>();
 
   protected readonly store = inject(KeyboardStore);
   protected readonly checkIcon: SVGIcon = checkIcon;
+  private readonly renderer = inject(Renderer2);
+  private readonly document = inject(DOCUMENT);
 
   private hasClickedButton = false;
 
-  constructor(
-    private renderer: Renderer2,
-    @Inject(DOCUMENT) private document: Document
-  ) {
+  constructor() {
     // ...existing code...
     // Initialize store when keyboard opens
     effect(() => {
@@ -182,18 +181,18 @@ export class KeyboardComponent {
 
   protected onConfirm(): void {
     this.valueChange.emit(this.store.value());
-    this.close.emit();
+    this.closeKeyboard.emit();
   }
 
   protected onClose(): void {
-    this.close.emit();
+    this.closeKeyboard.emit();
   }
 
-  protected onKeydown(event: KeyboardEvent): void {
+  protected onKeydown(_event: KeyboardEvent): void {
     // Allow normal typing
   }
 
-  protected onInputChange(event: Event): void {
+  protected onInputChange(_event: Event): void {
     // Allow normal input
   }
 }
