@@ -38,6 +38,7 @@ export class Reports {
     const division = this.userDivision();
     return this.blocks().filter(block =>
       (block.Division === division || division === 'All') &&
+      block.StartDate && block.EndDate &&
       isInDateRange(date, new Date(block.StartDate), new Date(block.EndDate))
     );
   });
@@ -47,7 +48,7 @@ export class Reports {
     const blocks = this.reportBlocks();
     return this.productions().filter(prod =>
       blocks.find(block => block.BlockId === prod.BlockId) &&
-      isSameDayOrBefore(new Date(prod.Date), date)
+      prod.Date && isSameDayOrBefore(new Date(prod.Date), date)
     );
   });
 
@@ -57,7 +58,7 @@ export class Reports {
     const blocks = this.reportBlocks();
     const productions = this.reportProductions();
     if (!date || !blocks.length || !productions.length) return [];
-    const divisions = [...new Set(blocks.map(b => b.Division))].sort();
+    const divisions = [...new Set(blocks.map(b => b.Division).filter((d): d is string => !!d))].sort();
     return divisions.map(division => ({
       Division: division,
       Blocks: blocks
