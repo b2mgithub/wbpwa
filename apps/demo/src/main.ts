@@ -21,7 +21,7 @@ bootstrapApplication(App, appConfig)
   .catch((err) => console.error('❌ Application bootstrap failed:', err));
 
 function registerServiceWorker() {
-  const wb = new Workbox('/service-worker.js');
+  const wb = new Workbox(`/service-worker.js?v=${environment.version}`);
 
   let updateShown = false;
 

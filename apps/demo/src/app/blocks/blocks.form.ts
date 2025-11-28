@@ -7,7 +7,7 @@ import { KENDO_DATEINPUTS } from '@progress/kendo-angular-dateinputs';
 import { FormFieldModule, KENDO_INPUTS } from '@progress/kendo-angular-inputs';
 import { FloatingLabelModule, KENDO_LABEL } from '@progress/kendo-angular-label';
 
-import { generateGuid } from '@devils-offline/guid';
+import { generateGuid, getDeviceId } from '@wbpwa/guid';
 
 import { Block } from './blocks.model';
 import { BlocksStore } from './blocks.state';
@@ -31,9 +31,9 @@ import { BlocksStore } from './blocks.state';
       <form [formGroup]="form" (ngSubmit)="save()" autocomplete="off">
         <div class="outline-div">
           <kendo-formfield>
-            <kendo-floatinglabel class="outline" text="Block">
+            <kendo-floatinglabel class="outline" text="Block Name">
               <kendo-textbox
-                formControlName="block"
+                formControlName="BlockName"
                 fillMode="outline"
                 required
               ></kendo-textbox>
@@ -42,7 +42,7 @@ import { BlocksStore } from './blocks.state';
           <kendo-formfield>
             <kendo-floatinglabel class="outline" text="Division">
               <kendo-textbox
-                formControlName="division"
+                formControlName="Division"
                 fillMode="outline"
                 required
               ></kendo-textbox>
@@ -51,7 +51,7 @@ import { BlocksStore } from './blocks.state';
           <kendo-formfield>
             <kendo-floatinglabel class="outline" text="Description">
               <kendo-textbox
-                formControlName="description"
+                formControlName="Description"
                 fillMode="outline"
               ></kendo-textbox>
             </kendo-floatinglabel>
@@ -59,10 +59,118 @@ import { BlocksStore } from './blocks.state';
           <kendo-formfield>
             <kendo-floatinglabel class="outline" text="Block Volume">
               <kendo-numerictextbox
-                formControlName="blockVolume"
+                formControlName="BlockVolume"
                 fillMode="outline"
                 [min]="0"
                 [decimals]="2"
+              ></kendo-numerictextbox>
+            </kendo-floatinglabel>
+          </kendo-formfield>
+          <kendo-formfield>
+            <kendo-floatinglabel class="outline" text="Start Date">
+              <kendo-datepicker
+                formControlName="StartDate"
+                [fillMode]="'outline'"
+              ></kendo-datepicker>
+            </kendo-floatinglabel>
+          </kendo-formfield>
+          <kendo-formfield>
+            <kendo-floatinglabel class="outline" text="End Date">
+              <kendo-datepicker
+                formControlName="EndDate"
+                [fillMode]="'outline'"
+              ></kendo-datepicker>
+            </kendo-floatinglabel>
+          </kendo-formfield>
+          <kendo-formfield>
+            <kendo-floatinglabel class="outline" text="Bunching">
+              <kendo-numerictextbox
+                formControlName="Bunching"
+                fillMode="outline"
+                [min]="0"
+                [decimals]="2"
+              ></kendo-numerictextbox>
+            </kendo-floatinglabel>
+          </kendo-formfield>
+          <kendo-formfield>
+            <kendo-floatinglabel class="outline" text="Skidding">
+              <kendo-numerictextbox
+                formControlName="Skidding"
+                fillMode="outline"
+                [min]="0"
+                [decimals]="2"
+              ></kendo-numerictextbox>
+            </kendo-floatinglabel>
+          </kendo-formfield>
+          <kendo-formfield>
+            <kendo-floatinglabel class="outline" text="Decking">
+              <kendo-numerictextbox
+                formControlName="Decking"
+                fillMode="outline"
+                [min]="0"
+                [decimals]="2"
+              ></kendo-numerictextbox>
+            </kendo-floatinglabel>
+          </kendo-formfield>
+          <kendo-formfield>
+            <kendo-floatinglabel class="outline" text="Processing">
+              <kendo-numerictextbox
+                formControlName="Processing"
+                fillMode="outline"
+                [min]="0"
+                [decimals]="2"
+              ></kendo-numerictextbox>
+            </kendo-floatinglabel>
+          </kendo-formfield>
+          <kendo-formfield>
+            <kendo-floatinglabel class="outline" text="Loading">
+              <kendo-numerictextbox
+                formControlName="Loading"
+                fillMode="outline"
+                [min]="0"
+                [decimals]="2"
+              ></kendo-numerictextbox>
+            </kendo-floatinglabel>
+          </kendo-formfield>
+          <kendo-formfield>
+            <kendo-floatinglabel class="outline" text="Road Construction (Km)">
+              <kendo-numerictextbox
+                formControlName="RoadConstructionKm"
+                fillMode="outline"
+                [min]="0"
+                [decimals]="2"
+              ></kendo-numerictextbox>
+            </kendo-floatinglabel>
+          </kendo-formfield>
+          <kendo-formfield>
+            <kendo-floatinglabel class="outline" text="Road Construction ($)">
+              <kendo-numerictextbox
+                formControlName="RoadConstruction"
+                fillMode="outline"
+                [min]="0"
+                [decimals]="2"
+                [format]="'c'"
+              ></kendo-numerictextbox>
+            </kendo-floatinglabel>
+          </kendo-formfield>
+          <kendo-formfield>
+            <kendo-floatinglabel class="outline" text="Graveling (Km)">
+              <kendo-numerictextbox
+                formControlName="GravelingKm"
+                fillMode="outline"
+                [min]="0"
+                [decimals]="2"
+              ></kendo-numerictextbox>
+            </kendo-floatinglabel>
+          </kendo-formfield>
+          <kendo-formfield>
+            <kendo-floatinglabel class="outline" text="Graveling ($)">
+              <kendo-numerictextbox
+                formControlName="Graveling"
+                fillMode="outline"
+                [min]="0"
+                [decimals]="2"
+                [format]="'c'"
               ></kendo-numerictextbox>
             </kendo-floatinglabel>
           </kendo-formfield>
@@ -88,21 +196,21 @@ export class BlocksForm implements OnInit {
   isCreateMode = true;
 
   form = new FormGroup({
-    block: new FormControl('', { nonNullable: true }),
-    division: new FormControl('', { nonNullable: true }),
-    description: new FormControl('', { nonNullable: true }),
-    blockVolume: new FormControl(0, { nonNullable: true }),
-    startDate: new FormControl<Date | null>(null),
-    endDate: new FormControl<Date | null>(null),
-    bunching: new FormControl(0, { nonNullable: true }),
-    skidding: new FormControl(0, { nonNullable: true }),
-    decking: new FormControl(0, { nonNullable: true }),
-    processing: new FormControl(0, { nonNullable: true }),
-    loading: new FormControl(0, { nonNullable: true }),
-    roadConstructionKm: new FormControl(0, { nonNullable: true }),
-    roadConstruction: new FormControl(0, { nonNullable: true }),
-    gravelingKm: new FormControl(0, { nonNullable: true }),
-    graveling: new FormControl(0, { nonNullable: true })
+    BlockName: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    Division: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    Description: new FormControl('', { nonNullable: true }),
+    BlockVolume: new FormControl(0, { nonNullable: true }),
+    StartDate: new FormControl<Date | null>(null),
+    EndDate: new FormControl<Date | null>(null),
+    Bunching: new FormControl(0, { nonNullable: true }),
+    Skidding: new FormControl(0, { nonNullable: true }),
+    Decking: new FormControl(0, { nonNullable: true }),
+    Processing: new FormControl(0, { nonNullable: true }),
+    Loading: new FormControl(0, { nonNullable: true }),
+    RoadConstructionKm: new FormControl(0, { nonNullable: true }),
+    RoadConstruction: new FormControl(0, { nonNullable: true }),
+    GravelingKm: new FormControl(0, { nonNullable: true }),
+    Graveling: new FormControl(0, { nonNullable: true })
   });
 
   ngOnInit(): void {
@@ -117,21 +225,21 @@ export class BlocksForm implements OnInit {
 
       if (block) {
         this.form.patchValue({
-          block: block.Block,
-          division: block.Division,
-          description: block.Description,
-          blockVolume: block.BlockVolume,
-          startDate: block.StartDate ? new Date(block.StartDate) : null,
-          endDate: block.EndDate ? new Date(block.EndDate) : null,
-          bunching: block.Bunching,
-          skidding: block.Skidding,
-          decking: block.Decking,
-          processing: block.Processing,
-          loading: block.Loading,
-          roadConstructionKm: block.RoadConstructionKm,
-          roadConstruction: block.RoadConstruction,
-          gravelingKm: block.GravelingKm,
-          graveling: block.Graveling
+          BlockName: block.BlockName,
+          Division: block.Division,
+          Description: block.Description,
+          BlockVolume: block.BlockVolume,
+          StartDate: block.StartDate ? new Date(block.StartDate) : null,
+          EndDate: block.EndDate ? new Date(block.EndDate) : null,
+          Bunching: block.Bunching,
+          Skidding: block.Skidding,
+          Decking: block.Decking,
+          Processing: block.Processing,
+          Loading: block.Loading,
+          RoadConstructionKm: block.RoadConstructionKm,
+          RoadConstruction: block.RoadConstruction,
+          GravelingKm: block.GravelingKm,
+          Graveling: block.Graveling
         });
         this.form.markAsPristine();
       } else {
@@ -141,36 +249,39 @@ export class BlocksForm implements OnInit {
   }
 
   async save(): Promise<void> {
-    const formValue = this.form.getRawValue();
-
-    if (!formValue.block || !formValue.division) {
-      console.warn('Block and Division are required');
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
       return;
     }
 
-    const now = new Date().toISOString();
+    const formValue = this.form.getRawValue();
+
+    const submitTimestamp = new Date().toISOString();
+    const deviceId = getDeviceId();
 
     if (this.isCreateMode) {
       const newId = generateGuid();
       const newBlock: Block = {
         id: newId,
         BlockId: newId,
-        Block: formValue.block,
-        Division: formValue.division,
-        Description: formValue.description,
-        BlockVolume: formValue.blockVolume,
-        StartDate: formValue.startDate?.toISOString() || '',
-        EndDate: formValue.endDate?.toISOString() || '',
-        Bunching: formValue.bunching,
-        Skidding: formValue.skidding,
-        Decking: formValue.decking,
-        Processing: formValue.processing,
-        Loading: formValue.loading,
-        RoadConstructionKm: formValue.roadConstructionKm,
-        RoadConstruction: formValue.roadConstruction,
-        GravelingKm: formValue.gravelingKm,
-        Graveling: formValue.graveling,
-        TimeStamp: now
+        BlockName: formValue.BlockName,
+        Division: formValue.Division,
+        Description: formValue.Description,
+        BlockVolume: formValue.BlockVolume,
+        StartDate: formValue.StartDate?.toISOString() || '',
+        EndDate: formValue.EndDate?.toISOString() || '',
+        Bunching: formValue.Bunching,
+        Skidding: formValue.Skidding,
+        Decking: formValue.Decking,
+        Processing: formValue.Processing,
+        Loading: formValue.Loading,
+        RoadConstructionKm: formValue.RoadConstructionKm,
+        RoadConstruction: formValue.RoadConstruction,
+        GravelingKm: formValue.GravelingKm,
+        Graveling: formValue.Graveling,
+        BranchTimestamp: submitTimestamp,
+        SubmitTimestamp: submitTimestamp,
+        DeviceId: deviceId
       };
       await this.store['create'](newBlock);
       this.store['createToServer'](newBlock);
@@ -182,22 +293,24 @@ export class BlocksForm implements OnInit {
 
       const updatedBlock: Block = {
         ...existingBlock,
-        Block: formValue.block,
-        Division: formValue.division,
-        Description: formValue.description,
-        BlockVolume: formValue.blockVolume,
-        StartDate: formValue.startDate?.toISOString() || '',
-        EndDate: formValue.endDate?.toISOString() || '',
-        Bunching: formValue.bunching,
-        Skidding: formValue.skidding,
-        Decking: formValue.decking,
-        Processing: formValue.processing,
-        Loading: formValue.loading,
-        RoadConstructionKm: formValue.roadConstructionKm,
-        RoadConstruction: formValue.roadConstruction,
-        GravelingKm: formValue.gravelingKm,
-        Graveling: formValue.graveling,
-        TimeStamp: now
+        BlockName: formValue.BlockName,
+        Division: formValue.Division,
+        Description: formValue.Description,
+        BlockVolume: formValue.BlockVolume,
+        StartDate: formValue.StartDate?.toISOString() || '',
+        EndDate: formValue.EndDate?.toISOString() || '',
+        Bunching: formValue.Bunching,
+        Skidding: formValue.Skidding,
+        Decking: formValue.Decking,
+        Processing: formValue.Processing,
+        Loading: formValue.Loading,
+        RoadConstructionKm: formValue.RoadConstructionKm,
+        RoadConstruction: formValue.RoadConstruction,
+        GravelingKm: formValue.GravelingKm,
+        Graveling: formValue.Graveling,
+        BranchTimestamp: existingBlock.BranchTimestamp || submitTimestamp,
+        SubmitTimestamp: submitTimestamp,
+        DeviceId: deviceId
       };
       await this.store['update'](updatedBlock);
       this.store['updateToServer'](this.blockId, updatedBlock);

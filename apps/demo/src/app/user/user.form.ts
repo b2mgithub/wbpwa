@@ -7,7 +7,7 @@ import { KENDO_DROPDOWNS } from '@progress/kendo-angular-dropdowns';
 import { KENDO_INPUTS, FormFieldModule } from '@progress/kendo-angular-inputs';
 import { FloatingLabelModule, KENDO_LABEL } from '@progress/kendo-angular-label';
 
-import { generateGuid } from '@devils-offline/guid';
+import { generateGuid } from '@wbpwa/guid';
 
 import { User } from './user.model';
 import { UsersStore } from './user.state';
@@ -31,7 +31,7 @@ import { UsersStore } from './user.state';
           <kendo-formfield>
             <kendo-floatinglabel class="outline" text="Email">
               <kendo-textbox
-                formControlName="email"
+                formControlName="Email"
                 fillMode="outline"
                 required
               ></kendo-textbox>
@@ -40,7 +40,7 @@ import { UsersStore } from './user.state';
           <kendo-formfield>
             <kendo-floatinglabel class="outline" text="First Name">
               <kendo-textbox
-                formControlName="firstName"
+                formControlName="FirstName"
                 fillMode="outline"
                 required
               ></kendo-textbox>
@@ -49,7 +49,7 @@ import { UsersStore } from './user.state';
           <kendo-formfield>
             <kendo-floatinglabel class="outline" text="Last Name">
               <kendo-textbox
-                formControlName="lastName"
+                formControlName="LastName"
                 fillMode="outline"
                 required
               ></kendo-textbox>
@@ -58,7 +58,7 @@ import { UsersStore } from './user.state';
           <kendo-formfield>
             <kendo-floatinglabel class="outline" text="Role">
               <kendo-dropdownlist
-                formControlName="role"
+                formControlName="Role"
                 fillMode="outline"
                 [data]="roles"
               ></kendo-dropdownlist>
@@ -67,7 +67,7 @@ import { UsersStore } from './user.state';
           <kendo-formfield>
             <kendo-floatinglabel class="outline" text="Division">
               <kendo-dropdownlist
-                formControlName="division"
+                formControlName="Division"
                 fillMode="outline"
                 [data]="divisions"
               ></kendo-dropdownlist>
@@ -76,7 +76,7 @@ import { UsersStore } from './user.state';
           <kendo-formfield>
             <kendo-floatinglabel class="outline" text="Password">
               <kendo-textbox
-                formControlName="password"
+                formControlName="Password"
                 fillMode="outline"
                 type="password"
               ></kendo-textbox>
@@ -107,12 +107,12 @@ export class UsersForm implements OnInit {
   divisions = ['PG', 'Mackenzie', 'All'];
 
   form = new FormGroup({
-    email: new FormControl('', { nonNullable: true }),
-    firstName: new FormControl('', { nonNullable: true }),
-    lastName: new FormControl('', { nonNullable: true }),
-    role: new FormControl<'User' | 'Admin'>('User', { nonNullable: true }),
-    division: new FormControl<'PG' | 'Mackenzie' | 'All'>('All', { nonNullable: true }),
-    password: new FormControl('', { nonNullable: true })
+    Email: new FormControl('', { nonNullable: true }),
+    FirstName: new FormControl('', { nonNullable: true }),
+    LastName: new FormControl('', { nonNullable: true }),
+    Role: new FormControl<'User' | 'Admin'>('User', { nonNullable: true }),
+    Division: new FormControl<'PG' | 'Mackenzie' | 'All'>('All', { nonNullable: true }),
+    Password: new FormControl('', { nonNullable: true })
   });
 
   ngOnInit(): void {
@@ -125,12 +125,12 @@ export class UsersForm implements OnInit {
 
       if (user) {
         this.form.patchValue({
-          email: user.Email,
-          firstName: user.FirstName,
-          lastName: user.LastName,
-          role: user.Role,
-          division: user.Division || 'All',
-          password: ''
+          Email: user.Email,
+          FirstName: user.FirstName,
+          LastName: user.LastName,
+          Role: user.Role,
+          Division: user.Division || 'All',
+          Password: ''
         });
         this.form.markAsPristine();
       } else {
@@ -142,7 +142,7 @@ export class UsersForm implements OnInit {
   async save(): Promise<void> {
     const formValue = this.form.getRawValue();
 
-    if (!formValue.email || !formValue.firstName) {
+    if (!formValue.Email || !formValue.FirstName) {
       console.warn('Email and First Name are required');
       return;
     }
@@ -152,12 +152,12 @@ export class UsersForm implements OnInit {
       const newUser: User = {
         id: newId,
         UserId: newId,
-        Email: formValue.email,
-        FirstName: formValue.firstName,
-        LastName: formValue.lastName,
-        Role: formValue.role,
-        Division: formValue.division,
-        Password: formValue.password
+        Email: formValue.Email,
+        FirstName: formValue.FirstName,
+        LastName: formValue.LastName,
+        Role: formValue.Role,
+        Division: formValue.Division,
+        Password: formValue.Password
       };
       await this.store['create'](newUser);
       this.store['createToServer'](newUser);
@@ -169,12 +169,12 @@ export class UsersForm implements OnInit {
 
       const updatedUser: User = {
         ...existingUser,
-        Email: formValue.email,
-        FirstName: formValue.firstName,
-        LastName: formValue.lastName,
-        Role: formValue.role,
-        Division: formValue.division,
-        ...(formValue.password && { Password: formValue.password })
+        Email: formValue.Email,
+        FirstName: formValue.FirstName,
+        LastName: formValue.LastName,
+        Role: formValue.Role,
+        Division: formValue.Division,
+        ...(formValue.Password && { Password: formValue.Password })
       };
       await this.store['update'](updatedUser);
       this.store['updateToServer'](this.userId, updatedUser);

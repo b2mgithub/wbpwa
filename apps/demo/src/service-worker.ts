@@ -13,7 +13,7 @@ import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 declare const self: ServiceWorkerGlobalScope & { currentUserId?: string };
 
 // Service Worker Version - increment this to force cache invalidation
-const VERSION = '2025-11-28-v1';
+const VERSION = '2025-11-28-v3';
 console.log(`🔧 Service Worker Version: ${VERSION}`);
 
 // Apply version to all cache names
@@ -67,7 +67,6 @@ console.log('🚀 Service Worker initialized');
 registerRoute(
   ({ url, request }) => 
     url.origin === 'https://pwacore.b2mapp.ca' &&
-    url.pathname.startsWith('/api/') && 
     request.method === 'GET',
   new NetworkFirst({
     cacheName: CACHES.api,

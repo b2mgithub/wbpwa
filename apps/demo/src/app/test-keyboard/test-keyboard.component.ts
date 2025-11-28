@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { ButtonsModule } from '@progress/kendo-angular-buttons';
 import { InputsModule } from '@progress/kendo-angular-inputs';
 import { FloatingLabelModule } from '@progress/kendo-angular-label';
-import { KeyboardComponent, KeyboardFormService } from '@devils-offline/keyboard';
+import { KeyboardComponent, KeyboardFormService } from '@wbpwa/keyboard';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 
 @Component({

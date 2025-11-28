@@ -4,9 +4,9 @@ import { withDevtools } from '@angular-architects/ngrx-toolkit';
 import { signalStore, type, withComputed, withHooks, withMethods } from '@ngrx/signals';
 import { withEntities } from '@ngrx/signals/entities';
 
-import { withOfflineSync } from '@devils-offline/offline-sync';
-import { withGridState, withOfflineDataService } from '@devils-offline/store';
-import { EntityAdapter } from '@devils-offline/idb';
+import { withOfflineSync } from '@wbpwa/offline-sync';
+import { withGridState, withOfflineDataService } from '@wbpwa/store';
+import { EntityAdapter } from '@wbpwa/idb';
 
 import { environment } from '../../environments/environment';
 import { Production } from './productions.model';

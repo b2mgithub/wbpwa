@@ -3,8 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { signalStoreFeature, withMethods } from '@ngrx/signals';
 import { firstValueFrom } from 'rxjs';
 
-import { generateGuid } from '@devils-offline/guid';
-import { devilsOfflineDB, FailedRequest } from '@devils-offline/idb';
+import { generateGuid } from '@wbpwa/guid';
+import { devilsOfflineDB, FailedRequest } from '@wbpwa/idb';
 
 // Type for Background Sync API
 interface SyncManager {

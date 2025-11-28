@@ -28,7 +28,7 @@ export class Reports {
   pricing = computed(() => {
     const rates = this.ratesStore.entities();
     return rates.reduce((acc, rate) => {
-      acc[rate.Type] = rate.Rate;
+      acc[rate.Type] = rate.RateValue;
       return acc;
     }, {} as Record<string, number>);
   });
@@ -136,7 +136,7 @@ function blockAggregateReport(block: any, productions: any[], date: Date, pricin
       };
     }, aggregatesZeroValues);
   return {
-    Block: block.Block,
+    Block: block.BlockName,
     Harvesting: harvestingMetrics.map(metric => {
       const HPlan = block[metric] || 0;
       const HSum = blockAggregates.Harvesting[`${metric}H`] || 0;

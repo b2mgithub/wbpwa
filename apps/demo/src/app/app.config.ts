@@ -7,7 +7,7 @@ import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideRouter } from '@angular/router';
 import { appRoutes } from './app.routes';
-import { jwtInterceptor, errorInterceptor, API_URL } from '@devils-offline/auth/data-access';
+import { jwtInterceptor, errorInterceptor, API_URL } from '@wbpwa/auth/data-access';
 import { environment } from '../environments/environment';
 
 export const appConfig: ApplicationConfig = {

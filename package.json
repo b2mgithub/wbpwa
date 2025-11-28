@@ -1,5 +1,5 @@
 {
-  "name": "@devils-offline/source",
+  "name": "@wbpwa/source",
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
@@ -11,8 +11,8 @@
     "inject-sw": "nx inject-sw demo",
     "serve-dist": "http-server dist/apps/demo/browser -p 8080 -c-1 --gzip --proxy http://127.0.0.1:8080?",
     "both": "nx run demo:build-with-sw && nx run demo:serve-dist",
-    "pwa-copy": "copyfiles --u 4 \"dist/apps/demo/browser/*\" \"C:\\Sites\\pwa.b2mapp.ca\" && copyfiles --u 4 \"dist/apps/demo/browser/assets/**/*\" \"C:\\Sites\\pwa.b2mapp.ca\" && echo 'pwa copy complete' ",
-    "prod-deploy": "nx build demo --configuration=production --base-href http://pwa.b2mapp.ca/ && npm run compile-sw && npm run inject-sw && npm run pwa-copy",
+    "pwa-copy": "copyfiles --u 4 \"dist/apps/demo/browser/**/*\" \"C:\\Sites\\pwa.b2mapp.ca\" && echo 'pwa copy complete' ",
+    "prod-deploy": "nx build demo --configuration=production --base-href https://pwa.b2mapp.ca/ && npm run compile-sw && npm run inject-sw && npm run pwa-copy",
     "test": "nx test demo",
     "lint": "nx lint demo",
     "clear-cache": "nx reset"
@@ -59,7 +59,7 @@
     "@progress/kendo-angular-utils": "^20.1.1",
     "@progress/kendo-data-query": "^1.7.1",
     "@progress/kendo-drawing": "^1.23.0",
-    "@progress/kendo-licensing": "^1.7.1",
+    "@progress/kendo-licensing": "^1.7.2",
     "@progress/kendo-svg-icons": "^4.5.0",
     "@progress/kendo-theme-material": "^12.2.0",
     "http-server": "^14.1.1",

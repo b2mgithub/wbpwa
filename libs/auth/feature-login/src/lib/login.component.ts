@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
-import { AuthStore } from '@devils-offline/auth/data-access';
+import { AuthStore } from '@wbpwa/auth/data-access';
 import { FormFieldModule, KENDO_INPUTS } from '@progress/kendo-angular-inputs';
 import { FloatingLabelModule, KENDO_LABEL } from '@progress/kendo-angular-label';
 import { KENDO_BUTTONS } from '@progress/kendo-angular-buttons';
@@ -19,12 +19,12 @@ import { KENDO_BUTTONS } from '@progress/kendo-angular-buttons';
           <kendo-formfield>
             <kendo-floatinglabel text="Email">
               <kendo-textbox
-                formControlName="email"
+                formControlName="Email"
                 fillMode="outline"
                 [clearButton]="true"
               ></kendo-textbox>
             </kendo-floatinglabel>
-            <kendo-formerror *ngIf="form.controls.email.errors?.['required']">
+            <kendo-formerror *ngIf="form.controls.Email.errors?.['required']">
               Email is required
             </kendo-formerror>
           </kendo-formfield>
@@ -32,12 +32,12 @@ import { KENDO_BUTTONS } from '@progress/kendo-angular-buttons';
           <kendo-formfield>
             <kendo-floatinglabel text="Password">
               <kendo-textbox
-                formControlName="password"
+                formControlName="Password"
                 fillMode="outline"
                 type="password"
               ></kendo-textbox>
             </kendo-floatinglabel>
-            <kendo-formerror *ngIf="form.controls.password.errors?.['required']">
+            <kendo-formerror *ngIf="form.controls.Password.errors?.['required']">
               Password is required
             </kendo-formerror>
           </kendo-formfield>
@@ -61,11 +61,11 @@ export class LoginComponent {
   readonly authStore = inject(AuthStore);
 
   form = new FormGroup({
-    email: new FormControl('steve@steve.com', { 
+    Email: new FormControl('steve@steve.com', { 
       nonNullable: true, 
       validators: [Validators.required, Validators.email] 
     }),
-    password: new FormControl('Pass1234!', { 
+    Password: new FormControl('Pass1234!', { 
       nonNullable: true, 
       validators: [Validators.required] 
     })
@@ -73,8 +73,8 @@ export class LoginComponent {
 
   onSubmit() {
     if (this.form.valid) {
-      const { email, password } = this.form.getRawValue();
-      this.authStore.login({ email, password });
+      const { Email, Password } = this.form.getRawValue();
+      this.authStore.login({ email: Email, password: Password });
     } else {
       this.form.markAllAsTouched();
     }

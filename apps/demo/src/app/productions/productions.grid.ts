@@ -10,7 +10,7 @@ import { CompositeFilterDescriptor } from '@progress/kendo-data-query';
 import { SVGIcon, pencilIcon, plusIcon, trashIcon } from '@progress/kendo-svg-icons';
 import { Subject } from 'rxjs';
 
-import { fromDateTimeOffset } from '@devils-offline/datetime-offset';
+import { fromDateTimeOffset } from '@wbpwa/datetime-offset';
 
 import { Production } from './productions.model';
 import { ProductionsStore } from './productions.state';

@@ -4,7 +4,7 @@
 
 ### Production Model
 ```typescript
-import { DateTimeOffsetString, nowPacificDateTimeOffset } from '@devils-offline/datetime-offset';
+import { DateTimeOffsetString, nowPacificDateTimeOffset } from '@wbpwa/datetime-offset';
 
 export interface Production {
   ProductionId: string;

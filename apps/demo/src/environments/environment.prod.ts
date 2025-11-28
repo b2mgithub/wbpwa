@@ -1,4 +1,5 @@
 export const environment = {
+  version: '1.0.2',
   production: true,
   apiUrl: 'https://pwacore.b2mapp.ca',
   hubUrl: 'https://pwacore.b2mapp.ca/hubs',

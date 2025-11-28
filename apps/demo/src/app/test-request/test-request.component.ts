@@ -9,8 +9,8 @@ import { KENDO_ICONS } from '@progress/kendo-angular-icons';
 import { KENDO_INDICATORS } from '@progress/kendo-angular-indicators';
 import { firstValueFrom } from 'rxjs';
 
-import { toPacificDateTimeOffset } from '@devils-offline/datetime-offset';
-import { devilsOfflineDB, FailedRequest } from '@devils-offline/idb';
+import { toPacificDateTimeOffset } from '@wbpwa/datetime-offset';
+import { devilsOfflineDB, FailedRequest } from '@wbpwa/idb';
 
 @Component({
   selector: 'app-test-request',

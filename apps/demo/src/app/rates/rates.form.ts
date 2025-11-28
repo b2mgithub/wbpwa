@@ -8,7 +8,7 @@ import { KENDO_INPUTS } from '@progress/kendo-angular-inputs';
 import { FloatingLabelModule } from '@progress/kendo-angular-label';
 import { KENDO_LABEL } from '@progress/kendo-angular-label';
 
-import { generateGuid } from '@devils-offline/guid';
+import { generateGuid, getDeviceId } from '@wbpwa/guid';
 
 import { Rate } from './rates.model';
 import { RatesStore } from './rates.state';
@@ -32,7 +32,7 @@ import { RatesStore } from './rates.state';
           <kendo-formfield>
             <kendo-floatinglabel class="outline" text="Type">
               <kendo-textbox
-                formControlName="type"
+                formControlName="Type"
                 fillMode="outline"
                 required
               ></kendo-textbox>
@@ -41,15 +41,15 @@ import { RatesStore } from './rates.state';
           <kendo-formfield>
             <kendo-floatinglabel class="outline" text="Sub Type">
               <kendo-textbox
-                formControlName="subType"
+                formControlName="SubType"
                 fillMode="outline"
               ></kendo-textbox>
             </kendo-floatinglabel>
           </kendo-formfield>
           <kendo-formfield>
-            <kendo-floatinglabel class="outline" text="Rate">
+            <kendo-floatinglabel class="outline" text="Rate Value">
               <kendo-numerictextbox
-                formControlName="rate"
+                formControlName="RateValue"
                 fillMode="outline"
                 [min]="0"
                 [decimals]="2"
@@ -80,9 +80,9 @@ export class RatesForm implements OnInit {
   isCreateMode = true;
 
   form = new FormGroup({
-    type: new FormControl('', { nonNullable: true }),
-    subType: new FormControl('', { nonNullable: true }),
-    rate: new FormControl(0, { nonNullable: true })
+    Type: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    SubType: new FormControl('', { nonNullable: true }),
+    RateValue: new FormControl(0, { nonNullable: true })
   });
 
   ngOnInit(): void {
@@ -96,9 +96,9 @@ export class RatesForm implements OnInit {
       if (rate) {
         // Use patchValue - floating labels will animate automatically
         this.form.patchValue({
-          type: rate.Type,
-          subType: rate.SubType,
-          rate: rate.Rate
+          Type: rate.Type,
+          SubType: rate.SubType,
+          RateValue: rate.RateValue
         });
         this.form.markAsPristine();
       } else {
@@ -108,35 +108,41 @@ export class RatesForm implements OnInit {
   }
 
   async save(): Promise<void> {
-    const formValue = this.form.getRawValue();
-
-    if (!formValue.type) {
-      console.warn('Type is required');
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
       return;
     }
 
-    const now = new Date().toISOString();
+    const formValue = this.form.getRawValue();
+
+    const submitTimestamp = new Date().toISOString();
+    const deviceId = getDeviceId();
 
     if (this.isCreateMode) {
       const newId = generateGuid();
       const newRate: Rate = {
         id: newId,
         RateId: newId,
-        Type: formValue.type,
-        SubType: formValue.subType,
-        Rate: formValue.rate,
-        TimeStamp: now
+        Type: formValue.Type,
+        SubType: formValue.SubType,
+        RateValue: formValue.RateValue,
+        BranchTimestamp: submitTimestamp,
+        SubmitTimestamp: submitTimestamp,
+        DeviceId: deviceId
       };
       await this.store['create'](newRate);
       this.store['createToServer'](newRate);
     } else if (this.rateId) {
+      const existingRate = this.store.entities().find(r => r.RateId === this.rateId);
       const updatedRate: Rate = {
         id: this.rateId,
         RateId: this.rateId,
-        Type: formValue.type,
-        SubType: formValue.subType,
-        Rate: formValue.rate,
-        TimeStamp: now
+        Type: formValue.Type,
+        SubType: formValue.SubType,
+        RateValue: formValue.RateValue,
+        BranchTimestamp: existingRate?.BranchTimestamp || submitTimestamp,
+        SubmitTimestamp: submitTimestamp,
+        DeviceId: deviceId
       };
       await this.store['update'](updatedRate);
       this.store['updateToServer'](this.rateId, updatedRate);

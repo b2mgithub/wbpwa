@@ -1,4 +1,4 @@
-import { DateTimeOffsetString, nowPacificDateTimeOffset } from '@devils-offline/datetime-offset';
+import { DateTimeOffsetString, nowPacificDateTimeOffset } from '@wbpwa/datetime-offset';
 
 // Rate entity model
 // NOTE: 'id' field added for DataService compatibility (aliases RateId)
@@ -7,15 +7,18 @@ export interface Rate {
   RateId: string;           // Primary key in IDB
   Type: string;
   SubType: string;
-  Rate: number;
-  TimeStamp: DateTimeOffsetString;
+  RateValue: number;
+  
+  // Event sourcing metadata
+  BranchTimestamp?: string;
+  SubmitTimestamp?: string;
+  DeviceId?: string;
 }
 
 export function createBlankRate(): Omit<Rate, 'RateId' | 'id'> {
   return {
     Type: '',
     SubType: '',
-    Rate: 0,
-    TimeStamp: nowPacificDateTimeOffset(),
+    RateValue: 0,
   };
 }

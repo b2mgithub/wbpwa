@@ -15,23 +15,23 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@devils-offline/datetime-offset": ["libs/datetime-offset/src/index.ts"],
-      "@devils-offline/forms": ["libs/forms/src/index.ts"],
-      "@devils-offline/guid": ["libs/guid/src/index.ts"],
-      "@devils-offline/idb": ["libs/idb/src/index.ts"],
-      "@devils-offline/offline-sync": ["libs/offline-sync/src/index.ts"],
-      "@devils-offline/store": ["libs/store/src/index.ts"],
-      "@devils-offline/keyboard": ["libs/keyboard/src/index.ts"],
-      "@devils-offline/auth/data-access": [
+      "@wbpwa/datetime-offset": ["libs/datetime-offset/src/index.ts"],
+      "@wbpwa/forms": ["libs/forms/src/index.ts"],
+      "@wbpwa/guid": ["libs/guid/src/index.ts"],
+      "@wbpwa/idb": ["libs/idb/src/index.ts"],
+      "@wbpwa/offline-sync": ["libs/offline-sync/src/index.ts"],
+      "@wbpwa/store": ["libs/store/src/index.ts"],
+      "@wbpwa/keyboard": ["libs/keyboard/src/index.ts"],
+      "@wbpwa/auth/data-access": [
         "libs/auth/data-access/src/index.ts"
       ],
-      "@devils-offline/auth/feature-login": [
+      "@wbpwa/auth/feature-login": [
         "libs/auth/feature-login/src/index.ts"
       ],
-      "@devils-offline/auth/util-guards": [
+      "@wbpwa/auth/util-guards": [
         "libs/auth/util-guards/src/index.ts"
       ],
-      "@devils-offline/users/feature-grid": [
+      "@wbpwa/users/feature-grid": [
         "libs/users/feature-grid/src/index.ts"
       ]
     }

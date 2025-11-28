@@ -6,7 +6,7 @@ import { KENDO_ICONS } from '@progress/kendo-angular-icons';
 import { KENDO_LAYOUT } from '@progress/kendo-angular-layout';
 import { SVGIcon, menuIcon } from '@progress/kendo-svg-icons';
 
-import { AuthStore, setDataHydrationCallback } from '@devils-offline/auth/data-access';
+import { AuthStore, setDataHydrationCallback } from '@wbpwa/auth/data-access';
 import { SplashScreenStore } from './splash-screen.store';
 import { DataHydrationService } from './data-hydration.service';
 

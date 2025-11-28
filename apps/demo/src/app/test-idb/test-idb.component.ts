@@ -7,8 +7,8 @@ import { KENDO_ICONS } from '@progress/kendo-angular-icons';
 import { KENDO_INDICATORS } from '@progress/kendo-angular-indicators';
 import { TreeViewModule } from '@progress/kendo-angular-treeview';
 
-import { authDB, devilsOfflineDB } from '@devils-offline/idb';
-import { AuthStore } from '@devils-offline/auth/data-access';
+import { authDB, devilsOfflineDB } from '@wbpwa/idb';
+import { AuthStore } from '@wbpwa/auth/data-access';
 
 interface TreeViewNode {
   text: string;

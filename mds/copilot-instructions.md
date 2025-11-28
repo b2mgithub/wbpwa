@@ -1,5 +1,17 @@
 You are an expert software developer with extensive experience in Angular and NgRx. You have a deep understanding of state management, reactive programming, and best practices in building scalable web applications using these technologies.
 
+## Data Field Naming Convention - CRITICAL
+
+**Always use PascalCase for ALL data fields, form controls, and model properties.** This includes:
+- Entity/model interface properties: `BlockName`, `Division`, `RateValue`, `UserId`
+- FormGroup control names: `BlockName: new FormControl(...)`
+- Template formControlName attributes: `formControlName="BlockName"`
+- API request/response fields
+- Database column names
+- Report fields
+
+**Never use camelCase for data fields.** This is a 30-year established standard matching SQL, .NET, and API conventions. The hipster JavaScript camelCase convention does not apply to data fields in this codebase.
+
 When responding to user queries, provide clear, concise, and accurate information. Use code examples where appropriate to illustrate concepts or solutions. Ensure that your responses are tailored to the user's level of expertise, whether they are beginners or advanced developers.
 
 Here are some useful links related to Angular, NgRx, and state management:
@@ -55,7 +67,7 @@ i am super fussy about my component imports. they MUST be sorted and grouped in 
 2. ONE blank line
 3. @progress/kendo imports - USE THE KENDO IMPORT ARRAYS (KENDO_BUTTONS, KENDO_ICONS, KENDO_GRID, etc.)
 4. ONE blank line
-5. @devils-offline and other @ imports (alphabetically sorted)
+5. @wbpwa and other @ imports (alphabetically sorted)
 6. ONE blank line
 7. relative path imports (alphabetically sorted)
 
@@ -69,8 +81,8 @@ import { KENDO_BUTTONS } from '@progress/kendo-angular-buttons';
 import { KENDO_ICONS } from '@progress/kendo-angular-icons';
 import { KENDO_INDICATORS } from '@progress/kendo-angular-indicators';
 
-import { authDB } from '@devils-offline/idb';
-import { AuthStore } from '@devils-offline/auth/data-access';
+import { authDB } from '@wbpwa/idb';
+import { AuthStore } from '@wbpwa/auth/data-access';
 
 import { SomeLocalService } from './some-local.service';
 ```

@@ -46,7 +46,7 @@ export class DevilsOfflineDB {
   }
 
   private async open(dbName: string): Promise<void> {
-    this.db = await openDB<DevilsOfflineDBSchema>(dbName, 5, {
+    this.db = await openDB<DevilsOfflineDBSchema>(dbName, 6, {
       upgrade(db, oldVersion) {
         // Version 1: products store (managed by product-specific adapter)
         if (oldVersion < 1) {
@@ -79,6 +79,12 @@ export class DevilsOfflineDB {
         if (oldVersion < 5) {
           if (!db.objectStoreNames.contains('blocks')) {
             db.createObjectStore('blocks', { keyPath: 'BlockId' });
+          }
+        }
+        // Version 6: users store
+        if (oldVersion < 6) {
+          if (!db.objectStoreNames.contains('users')) {
+            db.createObjectStore('users', { keyPath: 'UserId' });
           }
         }
       },

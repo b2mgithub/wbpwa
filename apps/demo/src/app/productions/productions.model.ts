@@ -1,4 +1,4 @@
-import { DateTimeOffsetString, nowPacificDateTimeOffset } from '@devils-offline/datetime-offset';
+import { DateTimeOffsetString, nowPacificDateTimeOffset } from '@wbpwa/datetime-offset';
 
 // Flattened Production entity model
 export interface Production {
@@ -6,50 +6,54 @@ export interface Production {
   ProductionId: string;     // Primary key in IDB
   BlockId: string;
   UserId: string;
-  Date: DateTimeOffsetString;
-  TimeStamp: DateTimeOffsetString;
+  Date?: DateTimeOffsetString;
   
   // Harvesting fields (flattened)
-  HBunchingH: number;
-  HBunchingP: number;
-  HSkiddingH: number;
-  HSkiddingP: number;
-  HDeckingH: number;
-  HDeckingP: number;
-  HProcessingH: number;
-  HProcessingP: number;
-  HLoadingH: number;
-  HLoadingP: number;
+  HBunchingH?: number;
+  HBunchingP?: number;
+  HSkiddingH?: number;
+  HSkiddingP?: number;
+  HDeckingH?: number;
+  HDeckingP?: number;
+  HProcessingH?: number;
+  HProcessingP?: number;
+  HLoadingH?: number;
+  HLoadingP?: number;
   
   // Road Construction fields (flattened)
-  RCat1Type: string;
-  RCat1: number;
-  RCat2Type: string;
-  RCat2: number;
-  RHoe1Type: string;
-  RHoe1: number;
-  RHoe2Type: string;
-  RHoe2: number;
-  RRockTruck: number;
-  RGrader: number;
-  RPacker: number;
-  RLabour: number;
-  RPercent: number;
+  RCat1Type?: string;
+  RCat1?: number;
+  RCat2Type?: string;
+  RCat2?: number;
+  RHoe1Type?: string;
+  RHoe1?: number;
+  RHoe2Type?: string;
+  RHoe2?: number;
+  RRockTruck?: number;
+  RGrader?: number;
+  RPacker?: number;
+  RLabour?: number;
+  RPercent?: number;
   
   // Graveling fields (flattened)
-  GCat1Type: string;
-  GCat1: number;
-  GCat2Type: string;
-  GCat2: number;
-  GHoe1Type: string;
-  GHoe1: number;
-  GHoe2Type: string;
-  GHoe2: number;
-  GRockTruck: number;
-  GGrader: number;
-  GPacker: number;
-  GLabour: number;
-  GPercent: number;
+  GCat1Type?: string;
+  GCat1?: number;
+  GCat2Type?: string;
+  GCat2?: number;
+  GHoe1Type?: string;
+  GHoe1?: number;
+  GHoe2Type?: string;
+  GHoe2?: number;
+  GRockTruck?: number;
+  GGrader?: number;
+  GPacker?: number;
+  GLabour?: number;
+  GPercent?: number;
+  
+  // Event sourcing metadata
+  BranchTimestamp?: string;
+  SubmitTimestamp?: string;
+  DeviceId?: string;
 }
 
 export function createBlankProduction(): Omit<Production, 'ProductionId' | 'id'> {
@@ -57,7 +61,6 @@ export function createBlankProduction(): Omit<Production, 'ProductionId' | 'id'>
     BlockId: '',
     UserId: '',
     Date: nowPacificDateTimeOffset(),
-    TimeStamp: nowPacificDateTimeOffset(),
     
     // Harvesting
     HBunchingH: 0, HBunchingP: 0,

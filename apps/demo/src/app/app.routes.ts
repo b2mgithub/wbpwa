@@ -15,8 +15,8 @@ import { TestRequestComponent } from './test-request/test-request.component';
 import { TestSwComponent } from './test-sw/test-sw.component';
 import { TestIdbComponent } from './test-idb/test-idb.component';
 
-import { LoginComponent } from '@devils-offline/auth/feature-login';
-import { authGuard, adminGuard } from '@devils-offline/auth/util-guards';
+import { LoginComponent } from '@wbpwa/auth/feature-login';
+import { authGuard, adminGuard } from '@wbpwa/auth/util-guards';
 import { UsersGrid } from './user/user.grid';
 import { UsersForm } from './user/user.form';
 

@@ -2,7 +2,7 @@ import { inject, Injector } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { filter, map, take } from 'rxjs';
-import { AuthStore } from '@devils-offline/auth/data-access';
+import { AuthStore } from '@wbpwa/auth/data-access';
 
 export const authGuard: CanActivateFn = (route, state) => {
   const authStore = inject(AuthStore);

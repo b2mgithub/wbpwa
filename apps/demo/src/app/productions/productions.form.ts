@@ -11,12 +11,12 @@ import { FormFieldModule, NumericTextBoxModule, TextBoxModule } from '@progress/
 import { FloatingLabelModule } from '@progress/kendo-angular-label';
 import { KENDO_LAYOUT } from '@progress/kendo-angular-layout';
 
-import { toPacificDateTimeOffset } from '@devils-offline/datetime-offset';
-import { generateGuid } from '@devils-offline/guid';
+import { toPacificDateTimeOffset } from '@wbpwa/datetime-offset';
+import { generateGuid, getDeviceId } from '@wbpwa/guid';
 
 
 import { ProductionsStore } from './productions.state';
-import { KeyboardComponent, KeyboardFormService } from '@devils-offline/keyboard';
+import { KeyboardComponent, KeyboardFormService } from '@wbpwa/keyboard';
 
 @Component({
   selector: 'app-productions-form',
@@ -296,7 +296,9 @@ export class ProductionsForm implements OnInit {
     BlockId: FormControl<string>;
     UserId: FormControl<string>;
     Date: FormControl<string>;
-    TimeStamp: FormControl<string>;
+    BranchTimestamp: FormControl<string>;
+    SubmitTimestamp: FormControl<string>;
+    DeviceId: FormControl<string>;
     HBunchingH: FormControl<number>;
     HBunchingP: FormControl<number>;
     HSkiddingH: FormControl<number>;
@@ -338,7 +340,9 @@ export class ProductionsForm implements OnInit {
     BlockId: new FormControl<string>('', { nonNullable: true, validators: Validators.required }),
     UserId: new FormControl<string>('', { nonNullable: true }),
     Date: new FormControl<string>('', { nonNullable: true }),
-    TimeStamp: new FormControl<string>('', { nonNullable: true }),
+    BranchTimestamp: new FormControl<string>('', { nonNullable: true }),
+    SubmitTimestamp: new FormControl<string>('', { nonNullable: true }),
+    DeviceId: new FormControl<string>('', { nonNullable: true }),
     HBunchingH: new FormControl<number>(0, { nonNullable: true }),
     HBunchingP: new FormControl<number>(0, { nonNullable: true }),
     HSkiddingH: new FormControl<number>(0, { nonNullable: true }),
@@ -413,8 +417,15 @@ export class ProductionsForm implements OnInit {
       return;
     }
 
-    // Update timestamp
-    this.form.controls.TimeStamp.setValue(toPacificDateTimeOffset(new Date()));
+    // Set event sourcing metadata
+    const submitTimestamp = toPacificDateTimeOffset(new Date());
+    this.form.controls.SubmitTimestamp.setValue(submitTimestamp);
+    this.form.controls.DeviceId.setValue(getDeviceId());
+    
+    // Set BranchTimestamp only on create, preserve on update
+    if (this.isCreateMode || !this.form.controls.BranchTimestamp.value) {
+      this.form.controls.BranchTimestamp.setValue(submitTimestamp);
+    }
 
     // Get full form value with proper typing
     const formValue = this.form.getRawValue();

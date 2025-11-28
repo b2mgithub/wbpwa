@@ -5,7 +5,7 @@ import { KENDO_BUTTONS } from '@progress/kendo-angular-buttons';
 import { KENDO_INPUTS } from '@progress/kendo-angular-inputs';
 import { FloatingLabelModule, KENDO_LABEL } from '@progress/kendo-angular-label';
 
-import { generateGuid } from '@devils-offline/guid';
+import { generateGuid, getDeviceId } from '@wbpwa/guid';
 
 import { Product } from './products.model';
 import { ProductsStore } from './products.state';
@@ -128,6 +128,7 @@ export class ProductsForm implements OnInit {
       if (this.isCreateMode()) {
         console.log('✨ CREATE mode');
         const newId = generateGuid();
+        const submitTimestamp = new Date().toISOString();
         const newProduct: Product = {
           id: newId,
           ProductId: newId,
@@ -135,7 +136,10 @@ export class ProductsForm implements OnInit {
           Category: categoryValue,
           UnitPrice: unitPriceValue,
           UnitsInStock: unitsInStockValue,
-          Discontinued: false
+          Discontinued: false,
+          BranchTimestamp: submitTimestamp,
+          SubmitTimestamp: submitTimestamp,
+          DeviceId: getDeviceId()
         };
         console.log('📦 Product:', newProduct);
         console.log('🔍 Calling store.create...');
@@ -151,12 +155,16 @@ export class ProductsForm implements OnInit {
           return;
         }
 
+        const submitTimestamp = new Date().toISOString();
         const updatedProduct: Product = {
           ...existingProduct,
           ProductName: productNameValue,
           Category: categoryValue,
           UnitPrice: unitPriceValue,
-          UnitsInStock: unitsInStockValue
+          UnitsInStock: unitsInStockValue,
+          BranchTimestamp: existingProduct.BranchTimestamp || submitTimestamp,
+          SubmitTimestamp: submitTimestamp,
+          DeviceId: getDeviceId()
         };
         console.log('📦 Updated:', updatedProduct);
         await this.store['update'](updatedProduct);

@@ -1,13 +1,18 @@
 // Product entity model
 // NOTE: 'id' field added for DataService compatibility (aliases ProductId)
 export interface Product {
-  id: string;          // Required by DataService interface (same as ProductId)
-  ProductId: string;   // Primary key in IDB
+  id: string;                        // Required by DataService interface (same as ProductId)
+  ProductId: string;                 // Primary key in IDB
   ProductName: string;
   UnitPrice: number;
   UnitsInStock: number;
   Discontinued: boolean;
   Category: string;
+  
+  // Event sourcing metadata
+  BranchTimestamp?: string;
+  SubmitTimestamp?: string;
+  DeviceId?: string;
 }
 
 // Default blank product for create forms

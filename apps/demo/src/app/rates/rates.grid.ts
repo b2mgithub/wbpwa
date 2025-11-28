@@ -44,7 +44,7 @@ import { RatesStore } from './rates.state';
   <kendo-grid-column field="RateId" title="ID" [width]="80"></kendo-grid-column>
   <kendo-grid-column field="Type" title="Type" [width]="120"></kendo-grid-column>
   <kendo-grid-column field="SubType" title="Sub Type" [width]="120"></kendo-grid-column>
-  <kendo-grid-column field="Rate" title="Rate" [width]="100" format="{0:c}"></kendo-grid-column>
+  <kendo-grid-column field="RateValue" title="Rate" [width]="100" format="{0:c}"></kendo-grid-column>
 
   <!-- Command Column with Edit/Remove buttons -->
   <kendo-grid-command-column title="Commands" [width]="160">

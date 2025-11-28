@@ -10,8 +10,16 @@ export interface User {
 }
 
 export interface AuthResponse {
-  User: User;
-  AccessToken: string;
+  UserId: string;
+  FirstName: string;
+  LastName: string;
+  Email: string;
+  Role: 'User' | 'Admin';
+  Division?: 'PG' | 'Mackenzie' | 'All';
+  Created: string;
+  Updated: string | null;
+  IsVerified: boolean;
+  JwtToken: string;
   RefreshToken: string;
 }
 

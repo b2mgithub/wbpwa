@@ -5,7 +5,7 @@ import { tapResponse } from '@ngrx/operators';
 import { pipe, switchMap, tap } from 'rxjs';
 import { updateState, withDevtools } from '@angular-architects/ngrx-toolkit';
 import { Router } from '@angular/router';
-import { authDB, devilsOfflineDB } from '@devils-offline/idb';
+import { authDB, devilsOfflineDB } from '@wbpwa/idb';
 
 import { AuthService } from './auth.service';
 
@@ -66,10 +66,17 @@ export const AuthStore = signalStore(
             authService.login(email, password).pipe(
               tapResponse({
                 next: async (response) => {
-                  // Flatten the response into AuthUser
+                  console.log('📥 Login response:', JSON.stringify(response));
+
+                  // Map flat API response to AuthUser
                   const authUser: AuthUser = {
-                    ...response.User,
-                    AccessToken: response.AccessToken,
+                    UserId: response.UserId,
+                    Email: response.Email,
+                    FirstName: response.FirstName,
+                    LastName: response.LastName,
+                    Role: response.Role,
+                    Division: response.Division,
+                    AccessToken: response.JwtToken,
                     RefreshToken: response.RefreshToken,
                   };
 

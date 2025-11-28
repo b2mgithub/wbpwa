@@ -39,7 +39,7 @@ import { BlocksStore } from './blocks.state';
     <button kendoButton [svgIcon]="createIcon" (click)="createBlock()" aria-label="Add"></button>
   </ng-template>
 
-  <kendo-grid-column field="Block" title="Block" [width]="120"></kendo-grid-column>
+  <kendo-grid-column field="BlockName" title="Block" [width]="120"></kendo-grid-column>
   <kendo-grid-column field="Division" title="Division" [width]="120"></kendo-grid-column>
   <kendo-grid-column field="Description" title="Description" [width]="200"></kendo-grid-column>
   <kendo-grid-column field="BlockVolume" title="Volume" [width]="100"></kendo-grid-column>
@@ -54,7 +54,7 @@ import { BlocksStore } from './blocks.state';
 @if (itemToRemove) {
   <kendo-dialog title="Please confirm" (close)="confirmRemove(false)">
     <p style="margin: 30px; text-align: center;">
-      Are you sure you want to delete Block {{ itemToRemove.Block }}?
+      Are you sure you want to delete Block {{ itemToRemove.BlockName }}?
     </p>
     <kendo-dialog-actions>
       <button kendoButton themeColor="primary" (click)="confirmRemove(true)">Yes</button>
