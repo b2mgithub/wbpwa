@@ -8,7 +8,7 @@ import { KENDO_BUTTONS } from '@progress/kendo-angular-buttons';
 import { KENDO_DATEINPUTS } from '@progress/kendo-angular-dateinputs';
 import { KENDO_DROPDOWNS } from '@progress/kendo-angular-dropdowns';
 import { FormFieldModule, NumericTextBoxModule, TextBoxModule } from '@progress/kendo-angular-inputs';
-import { FloatingLabelModule } from '@progress/kendo-angular-label';
+import { FloatingLabelModule, LabelModule } from '@progress/kendo-angular-label';
 import { KENDO_LAYOUT } from '@progress/kendo-angular-layout';
 
 import { toPacificDateTimeOffset } from '@wbpwa/datetime-offset';
@@ -27,6 +27,7 @@ import { KeyboardComponent, KeyboardFormService } from '@wbpwa/keyboard';
     KENDO_DROPDOWNS,
     FormFieldModule,
     FloatingLabelModule,
+    LabelModule,
     NumericTextBoxModule,
     TextBoxModule,
     KENDO_LAYOUT,
@@ -40,12 +41,14 @@ import { KeyboardComponent, KeyboardFormService } from '@wbpwa/keyboard';
   
   <form [formGroup]="form" (ngSubmit)="save()">
     <div class="date-field">
-      <label class="k-label outline">Date</label>
-      <kendo-datepicker
-        [value]="dateValue"
-        (valueChange)="onDateChange($event)"
-        style="width: 100%;"
-      ></kendo-datepicker>
+      <kendo-label text="Date" class="k-label outline" [for]="datePicker">
+        <kendo-datepicker
+          #datePicker
+          [value]="dateValue"
+          (valueChange)="onDateChange($event)"
+          style="width: 100%;"
+        ></kendo-datepicker>
+      </kendo-label>
     </div>
 
     <kendo-tabstrip>
@@ -274,7 +277,7 @@ import { KeyboardComponent, KeyboardFormService } from '@wbpwa/keyboard';
   [isOpen]="keyboardForm.keyboardOpen"
   [config]="keyboardForm.keyboardConfig"
   (valueChange)="onKeyboardValueChange($event)"
-  (close)="onKeyboardClose()"
+  (closeKeyboard)="onKeyboardClose()"
 ></lib-keyboard>
   `
 })
